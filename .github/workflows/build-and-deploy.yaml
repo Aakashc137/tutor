@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-push-to-dockerhub-deploy-to-aws-eb:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,6 +55,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          eb init -p docker -r $AWS_REGION --application-name tutor
+          eb init tutor -p docker -r $AWS_REGION
           echo "y" | eb use Tutor-env
           eb deploy
