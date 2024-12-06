@@ -30,7 +30,7 @@ jobs:
       - name: Build Docker image
         env:
           DOCKER_IMAGE_NAME: aakashc137/tutor-backend
-          DOCKER_IMAGE_TAG: sha:${{ env.shortSha }}
+          DOCKER_IMAGE_TAG: sha-${{ env.shortSha }}
         run: |
           docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
 
@@ -38,7 +38,7 @@ jobs:
       - name: Push Docker image
         env:
           DOCKER_IMAGE_NAME: aakashc137/tutor-backend
-          DOCKER_IMAGE_TAG: sha:${{ env.shortSha }}
+          DOCKER_IMAGE_TAG: sha-${{ env.shortSha }}
         run: |
           docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
 
