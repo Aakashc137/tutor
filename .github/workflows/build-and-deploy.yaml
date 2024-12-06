@@ -42,7 +42,13 @@ jobs:
         run: |
           docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
 
-      # Step 6: Update Elastic Beanstalk Environment Variables
+      # Step 6: Install AWS Elastic Beanstalk CLI
+      - name: Install Elastic Beanstalk CLI
+        run: |
+          pip install awsebcli
+          eb --version
+
+      # Step 7: Update Elastic Beanstalk Environment Variables
       - name: Update Elastic Beanstalk Environment
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -53,7 +59,7 @@ jobs:
             --environment-name Tutor-env \
             --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=IMAGE_TAG,Value=sha-${{ env.shortSha }}
 
-      # Step 7: Deploy to Elastic Beanstalk
+      # Step 8: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
