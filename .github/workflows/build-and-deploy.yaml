@@ -42,22 +42,17 @@ jobs:
         run: |
           docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
 
-      # Step 6: Install AWS Elastic Beanstalk CLI
+      # Step 6: Replace image tag in Dockerrun.aws.json.template
+      - name: Generate Dockerrun.aws.json
+        run: |
+          sed "s|{{IMAGE_TAG}}|sha-${{ env.shortSha }}|g" Dockerrun.aws.json.template > Dockerrun.aws.json
+          cat Dockerrun.aws.json # Optional: Debugging to confirm correct replacement
+
+      # Step 7: Install AWS Elastic Beanstalk CLI
       - name: Install Elastic Beanstalk CLI
         run: |
           pip install awsebcli
           eb --version
-
-      # Step 7: Update Elastic Beanstalk Environment Variables
-      - name: Update Elastic Beanstalk Environment
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          aws elasticbeanstalk update-environment \
-            --environment-name Tutor-env \
-            --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=IMAGE_TAG,Value=sha-${{ env.shortSha }}
 
       # Step 8: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk

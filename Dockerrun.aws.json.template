@@ -1,7 +1,7 @@
 {
     "AWSEBDockerrunVersion": "1",
     "Image": {
-        "Name": "aakashc137/tutor-backend:${IMAGE_TAG}",
+        "Name": "aakashc137/tutor-backend:{{IMAGE_TAG}}",
         "Update": "true"
     },
     "Ports": [
