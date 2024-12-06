@@ -1,0 +1,60 @@
+name: Deploy to Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set short Git commit SHA to environment variable
+      - name: Set short SHA
+        id: vars
+        run: echo "shortSha=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 4: Build Docker image with short SHA tag
+      - name: Build Docker image
+        env:
+          DOCKER_IMAGE_NAME: aakashc137/tutor-backend
+          DOCKER_IMAGE_TAG: sha:${{ env.shortSha }}
+        run: |
+          docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+
+      # Step 5: Push Docker image to Docker Hub
+      - name: Push Docker image
+        env:
+          DOCKER_IMAGE_NAME: aakashc137/tutor-backend
+          DOCKER_IMAGE_TAG: sha:${{ env.shortSha }}
+        run: |
+          docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+
+      # Step 6: Install AWS Elastic Beanstalk CLI
+      - name: Install Elastic Beanstalk CLI
+        run: |
+          pip install awsebcli
+          eb --version
+
+      # Step 7: Deploy to Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          eb init -p docker -r $AWS_REGION --application-name tutor
+          echo "y" | eb use Tutor-env
+          eb deploy
