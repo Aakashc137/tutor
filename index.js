@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { sequelize } from './models/user.js';
+import { sequelize } from './connections/database.js'
+import routes from './routes/routes.js'
 import authRoutes from './routes/authRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
@@ -11,8 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use('/auth', authRoutes);
-app.use('/files', uploadRoutes);
+app.use('/', routes);
 
 const startServer = async () => {
   try {
