@@ -28,10 +28,6 @@ export const Message = sequelize.define(
   {
     tableName: "Messages",
     timestamps: true,
-    indexes: [
-      { fields: ["chatId"] }, // Index on chatId
-      { fields: ["chatId", "updatedAt"], order: [["updatedAt", "DESC"]] }, // Composite index for pagination
-      { fields: ["updatedAt"], order: [["updatedAt", "DESC"]] }, // For sorting by updatedAt
-    ],
+    indexes: [{ fields: ["chatId"] }],
   }
 );

@@ -63,25 +63,21 @@ class ChatController {
         // Fetch messages only if `messages` is provided
         const allMessages = await sequelize.query(
           `
-          SELECT *
-          FROM (
-            SELECT 
-              "id", 
-              "chatId", 
-              "role", 
-              "content", 
-              "updatedAt",
-              ROW_NUMBER() OVER (PARTITION BY "chatId" ORDER BY "updatedAt" DESC) AS "row_num"
-            FROM "Messages" AS "Message"
-            WHERE "Message"."chatId" IN (:chatIds)
-          ) subquery
-          WHERE row_num <= :messageLimit
-          ORDER BY "chatId" ASC, "updatedAt" DESC;
-          `,
+            SELECT *
+            FROM (
+              SELECT 
+                "Messages".*,
+                ROW_NUMBER() OVER (PARTITION BY "chatId" ORDER BY "id" DESC) AS "row_num"
+              FROM "Messages"
+              WHERE "chatId" IN (:chatIds)
+            ) subquery
+            WHERE row_num <= :messageLimit
+            ORDER BY "chatId" ASC, "id" DESC;
+            `,
           {
             replacements: {
-              chatIds,
-              messageLimit: parseInt(messages) + 1,
+              chatIds, // Array of chat IDs
+              messageLimit: parseInt(messages) + 1, // Fetch extra message for `hasNextPage`
             },
             type: sequelize.QueryTypes.SELECT,
           }
