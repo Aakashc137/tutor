@@ -58,7 +58,7 @@ class MessageController {
         success: true,
         messages: resultMessages,
         hasNextPage,
-        nextCursor,
+        nextCursor: hasNextPage ? nextCursor : null,
       });
     } catch (error) {
       console.error(error);
