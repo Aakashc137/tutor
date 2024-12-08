@@ -76,26 +76,24 @@ class ChatController {
             `,
           {
             replacements: {
-              chatIds, // Array of chat IDs
-              messageLimit: parseInt(messages) + 1, // Fetch extra message for `hasNextPage`
+              chatIds,
+              messageLimit: parseInt(messages) + 1,
             },
             type: sequelize.QueryTypes.SELECT,
           }
         );
 
-        // Group messages by chatId using lodash
         messagesByChatId = lodash.groupBy(allMessages, "chatId");
       }
 
-      // Add messages with pagination data to each chat
       const resultChats = chats.map((chat) => {
         const chatMessages = messagesByChatId[chat.id] || [];
-        const hasNextPage = chatMessages.length > parseInt(messages || 0); // Default to 0 if messages not provided
+        const hasNextPage = chatMessages.length > parseInt(messages || 0);
         const resultMessages = hasNextPage
           ? chatMessages.slice(0, messages)
           : chatMessages;
         const nextCursor = hasNextPage
-          ? resultMessages[resultMessages.length - 1]?.updatedAt
+          ? resultMessages[resultMessages.length - 1]?.id
           : null;
 
         return {
@@ -104,7 +102,7 @@ class ChatController {
             ? {
                 messages: resultMessages,
                 hasNextPage,
-                nextCursor,
+                nextCursor: hasNextPage ? nextCursor : null,
               }
             : null,
         };
@@ -117,7 +115,7 @@ class ChatController {
         success: true,
         chats: resultChats,
         hasNextPage,
-        nextCursor,
+        nextCursor: hasNextPage ? nextCursor : null,
       });
     } catch (error) {
       console.error(error);
