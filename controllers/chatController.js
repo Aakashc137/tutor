@@ -1,5 +1,7 @@
 import { Sequelize } from "sequelize";
 import { Chat } from "../models/chat.js";
+import lodash from "lodash";
+import { sequelize } from "../connections/database.js";
 
 class ChatController {
   async createChat(req, res) {
@@ -23,7 +25,8 @@ class ChatController {
 
   async getPaginatedChats(req, res) {
     try {
-      const { userId, cursor, limit = 10 } = req.query;
+      const { userId, cursor, limit = 10, messages } = req.query;
+
       if (!userId) {
         return res
           .status(400)
@@ -35,26 +38,90 @@ class ChatController {
         where.updatedAt = { [Sequelize.Op.lt]: cursor };
       }
 
+      // Fetch paginated chats
       const chats = await Chat.findAll({
         where,
         order: [["updatedAt", "DESC"]],
-        limit: parseInt(limit) + 1,
+        limit: parseInt(limit),
       });
 
-      const hasNextPage = chats.length > limit;
+      if (!chats.length) {
+        return res.status(200).send({
+          success: true,
+          chats: [],
+          hasNextPage: false,
+          nextCursor: null,
+        });
+      }
 
-      const resultChats = hasNextPage ? chats.slice(0, limit) : chats;
+      // Get all chat IDs
+      const chatIds = chats.map((chat) => chat.id);
 
-      const nextCursor =
-        resultChats.length > 0
-          ? resultChats[resultChats.length - 1].updatedAt
+      let messagesByChatId = {};
+
+      if (messages) {
+        // Fetch messages only if `messages` is provided
+        const allMessages = await sequelize.query(
+          `
+          SELECT *
+          FROM (
+            SELECT 
+              "id", 
+              "chatId", 
+              "role", 
+              "content", 
+              "updatedAt",
+              ROW_NUMBER() OVER (PARTITION BY "chatId" ORDER BY "updatedAt" DESC) AS "row_num"
+            FROM "Messages" AS "Message"
+            WHERE "Message"."chatId" IN (:chatIds)
+          ) subquery
+          WHERE row_num <= :messageLimit
+          ORDER BY "chatId" ASC, "updatedAt" DESC;
+          `,
+          {
+            replacements: {
+              chatIds,
+              messageLimit: parseInt(messages) + 1,
+            },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+
+        // Group messages by chatId using lodash
+        messagesByChatId = lodash.groupBy(allMessages, "chatId");
+      }
+
+      // Add messages with pagination data to each chat
+      const resultChats = chats.map((chat) => {
+        const chatMessages = messagesByChatId[chat.id] || [];
+        const hasNextPage = chatMessages.length > parseInt(messages || 0); // Default to 0 if messages not provided
+        const resultMessages = hasNextPage
+          ? chatMessages.slice(0, messages)
+          : chatMessages;
+        const nextCursor = hasNextPage
+          ? resultMessages[resultMessages.length - 1]?.updatedAt
           : null;
+
+        return {
+          ...chat.toJSON(),
+          messagePayload: messages
+            ? {
+                messages: resultMessages,
+                hasNextPage,
+                nextCursor,
+              }
+            : null,
+        };
+      });
+
+      const hasNextPage = chats.length === parseInt(limit);
+      const nextCursor = hasNextPage ? chats[chats.length - 1].updatedAt : null;
 
       res.status(200).send({
         success: true,
         chats: resultChats,
         hasNextPage,
-        nextCursor: hasNextPage ? nextCursor : null,
+        nextCursor,
       });
     } catch (error) {
       console.error(error);
