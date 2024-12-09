@@ -63,6 +63,7 @@ export const login = async (req, res) => {
       success: true,
       message: 'Login successful',
       accessToken,
+      userId: user.id
     });
   } catch (error) {
     console.error('Login Error:', error);
