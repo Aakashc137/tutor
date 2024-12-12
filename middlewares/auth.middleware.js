@@ -12,6 +12,13 @@ export const verifyAccessToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (req.method === "POST") {
+      req.body.userId = decoded.id;
+    } else if (req.method === "GET") {
+      req.query.userId = decoded.id;
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

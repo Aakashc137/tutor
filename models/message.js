@@ -11,6 +11,7 @@ export const Message = sequelize.define(
         model: "Chats",
         key: "id",
       },
+      onDelete: "CASCADE",
     },
     role: {
       type: Sequelize.ENUM("USER", "ASSISTANT"),

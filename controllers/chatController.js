@@ -124,6 +124,43 @@ class ChatController {
         .send({ success: false, message: "Failed to fetch chats" });
     }
   }
+
+  async deleteChats(req, res) {
+    try {
+      const { chatIds, userId } = req.body;
+  
+      // Validate chatIds
+      if (!chatIds || !Array.isArray(chatIds) || lodash.isEmpty(chatIds)) {
+        return res
+          .status(400)
+          .send({ success: false, message: "chatIds not found in input" });
+      }
+  
+      // Fetch and delete the chats
+      const deletedChats = await Chat.findAll({
+        where: { id: chatIds, userId },
+        attributes: ["id", "title"], // Fetch only required fields
+      });
+  
+      if (!deletedChats?.length) {
+        return res
+          .status(404)
+          .send({ success: false, message: "No chats found for the given chatIds" });
+      }
+  
+      await Chat.destroy({
+        where: { id: chatIds, userId },
+      });
+  
+      // Return deleted chats
+      res.status(200).send({ success: true, deletedChats });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .send({ success: false, message: "Failed to delete chats" });
+    }
+  }
 }
 
 export const chatController = new ChatController();
