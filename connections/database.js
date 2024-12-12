@@ -16,5 +16,6 @@ export const sequelize = new Sequelize(
         rejectUnauthorized: false, // Only for development; ensure secure settings in production
       },
     },
+    timezone: '+00:00',
   }
 );
