@@ -5,9 +5,9 @@ import { messageRouter } from './messageRoutes.js';
 import { extractRouter } from './extractRoutes.js';
 import { verifyAccessToken } from '../middlewares/auth.middleware.js';
 import { userRouter } from './userRoutes.js';
+import { blueprintRouter } from './blueprintRoutes.js';
 
 const router = express.Router();
-
 
 // Health Check Endpoint
 router.get('/health', (req, res) => {
@@ -21,5 +21,6 @@ router.use('/chat', verifyAccessToken, chatRouter);
 router.use('/message', verifyAccessToken, messageRouter);
 router.use('/user', verifyAccessToken, userRouter);
 router.use('/extract', verifyAccessToken, extractRouter);
+router.use('/blueprint', verifyAccessToken, blueprintRouter);
 
 export default router;
