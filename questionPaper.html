@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Professional Question Paper</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+
+      /* 
+        Limit the header portion to roughly 20% of page height.
+        This won't be exact in all browsers, but it's a typical approach.
+      */
+      .header-container {
+        max-height: 20vh; /* ~1/5 of the visible page height */
+        margin-bottom: 20px;
+        overflow: hidden; /* if text exceeds 20vh, it won't expand further */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .header-line {
+        margin: 4px 0;
+      }
+
+      .section-title-row {
+        display: flex;
+        justify-content: space-between; /* pushes marks breakdown to the right */
+        align-items: baseline;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+
+      .section-title-row h2 {
+        margin: 0;
+      }
+
+      .marks-breakdown {
+        text-align: right; 
+        font-weight: normal;
+        font-size: 1rem; /* slightly smaller if you like */
+      }
+
+      ol.question-list {
+        margin: 0 0 20px 40px;
+        padding: 0;
+      }
+      ol.question-list li {
+        margin-bottom: 15px;
+      }
+      .question-text {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .mcq-options {
+        list-style-type: none;
+        padding-left: 20px;
+        margin-top: 5px;
+      }
+      .mcq-options li {
+        margin: 3px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- Top Header: Academy Name, Subject, Grade, etc. -->
+    <div class="header-container">
+      <h2 class="header-line">Sample Input Academy Name</h2>
+      <p class="header-line">Subject: Maths &nbsp; | &nbsp; Grade: 10</p>
+      <p class="header-line">Total Marks: 85 &nbsp; | &nbsp; Time: </p>
+    </div>
+
+      <!-- A row for the section title + the right-aligned marks breakdown -->
+      <div class="section-title-row">
+        <h2>Section A</h2>
+        <div class="marks-breakdown">
+          (9 x 1) = 9
+        </div>
+      </div>
+
+      <ol class="question-list">
+        <li>
+          <span class="question-text">
+            Solve the equation: 2x + 3 &#x3D; 7.
+          </span>
+            <ul class="mcq-options">
+                <li>A) x &#x3D; 1</li>
+                <li>B) x &#x3D; 2</li>
+                <li>C) x &#x3D; 3</li>
+                <li>D) x &#x3D; 4</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            Find the solution to the equation: 5y - 2 &#x3D; 3.
+          </span>
+            <ul class="mcq-options">
+                <li>A) y &#x3D; 0.5</li>
+                <li>B) y &#x3D; 1</li>
+                <li>C) y &#x3D; 1.4</li>
+                <li>D) y &#x3D; 2</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            Which of the following is a rational number?
+          </span>
+            <ul class="mcq-options">
+                <li>A) √2</li>
+                <li>B) π</li>
+                <li>C) 0.5</li>
+                <li>D) e</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            What is the reciprocal of 7?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 7&#x2F;1</li>
+                <li>B) 1&#x2F;7</li>
+                <li>C) 0</li>
+                <li>D) -7</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            What is the decimal representation of 3&#x2F;4?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 0.25</li>
+                <li>B) 0.5</li>
+                <li>C) 0.75</li>
+                <li>D) 1</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            Which of the following is equivalent to 2&#x2F;3 as a percentage?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 50%</li>
+                <li>B) 60%</li>
+                <li>C) 66.67%</li>
+                <li>D) 75%</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            Which number is NOT a rational number?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 5&#x2F;2</li>
+                <li>B) 3.33...</li>
+                <li>C) √3</li>
+                <li>D) 7</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            What is the sum of 1&#x2F;2 and 2&#x2F;3?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 1&#x2F;6</li>
+                <li>B) 5&#x2F;6</li>
+                <li>C) 7&#x2F;6</li>
+                <li>D) 4&#x2F;6</li>
+            </ul>
+        </li>
+        <li>
+          <span class="question-text">
+            If 3^x &#x3D; 81, what is x?
+          </span>
+            <ul class="mcq-options">
+                <li>A) 2</li>
+                <li>B) 3</li>
+                <li>C) 4</li>
+                <li>D) 5</li>
+            </ul>
+        </li>
+      </ol>
+      <!-- A row for the section title + the right-aligned marks breakdown -->
+      <div class="section-title-row">
+        <h2>Section B</h2>
+        <div class="marks-breakdown">
+          (7 x 2) = 14
+        </div>
+      </div>
+
+      <ol class="question-list">
+        <li>
+          <span class="question-text">
+            Solve: x&#x2F;4 + 3 &#x3D; 7.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Solve 2(x - 3) &#x3D; 4x - 10.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Solve \( \frac{x}{2} - 5 &#x3D; 3 \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Add: \( \frac{2}{3} + \frac{3}{4} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Subtract: \( \frac{7}{10} - \frac{1}{5} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Express \( 2^{-3} \) in fraction form.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            What is the value of \( n \) in \( 3(n+4) &#x3D; 2n + 12 \)?
+          </span>
+        </li>
+      </ol>
+      <!-- A row for the section title + the right-aligned marks breakdown -->
+      <div class="section-title-row">
+        <h2>Section C</h2>
+        <div class="marks-breakdown">
+          (9 x 3) = 27
+        </div>
+      </div>
+
+      <ol class="question-list">
+        <li>
+          <span class="question-text">
+            The sum of three consecutive integers is 51. Find the integers.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            The ages of A, B, and C are in ratio 2:3:4. Six years later, the sum of their ages will be 66. Find their present ages.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Simplify \( \frac{3}{4} \times \frac{2}{3} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Divide \( \frac{4}{5} \div \frac{2}{7} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Simplify: \( (3^2)^3 \times 3^{-4} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Find the value of \( (2^3)^2 \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Prove that if \( a^m &#x3D; a^n \), then m &#x3D; n for \( a \neq 0 \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Solve the equation: 4(x + 2) &#x3D; 2(x + 6) + 4x
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Simplify and express \( 4^3 - 5 \times 2^2 \) using exponents and basic operations.
+          </span>
+        </li>
+      </ol>
+      <!-- A row for the section title + the right-aligned marks breakdown -->
+      <div class="section-title-row">
+        <h2>Section D</h2>
+        <div class="marks-breakdown">
+          (7 x 5) = 35
+        </div>
+      </div>
+
+      <ol class="question-list">
+        <li>
+          <span class="question-text">
+            Solve the equation system: 2x + y &#x3D; 10 and 3x - 2y &#x3D; 3.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Solve: 3(x - 5) + 2x &#x3D; 5(x - 3) - 4.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Form quadratic equation if product of two consecutive integers is 56.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Multiply the rational numbers: \( \frac{1}{2} \times \frac{5}{8} \times \frac{3}{4} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Evaluate the expression \( \frac{2^5 \times 3^2}{6^3} \).
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Express \( \frac{1}{2}+\frac{1}{3}-\frac{1}{6} \) in simplest form.
+          </span>
+        </li>
+        <li>
+          <span class="question-text">
+            Solve for x: \( 5^{x-1} &#x3D; 25 \).
+          </span>
+        </li>
+      </ol>
+
+  </body>
+</html>

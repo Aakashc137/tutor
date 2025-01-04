@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Professional Question Paper</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+
+      /* 
+        Limit the header portion to roughly 20% of page height.
+        This won't be exact in all browsers, but it's a typical approach.
+      */
+      .header-container {
+        max-height: 20vh; /* ~1/5 of the visible page height */
+        margin-bottom: 20px;
+        overflow: hidden; /* if text exceeds 20vh, it won't expand further */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .header-line {
+        margin: 4px 0;
+      }
+
+      .section-title-row {
+        display: flex;
+        justify-content: space-between; /* pushes marks breakdown to the right */
+        align-items: baseline;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+
+      .section-title-row h2 {
+        margin: 0;
+      }
+
+      .marks-breakdown {
+        text-align: right; 
+        font-weight: normal;
+        font-size: 1rem; /* slightly smaller if you like */
+      }
+
+      ol.question-list {
+        margin: 0 0 20px 40px;
+        padding: 0;
+      }
+      ol.question-list li {
+        margin-bottom: 15px;
+      }
+      .question-text {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .mcq-options {
+        list-style-type: none;
+        padding-left: 20px;
+        margin-top: 5px;
+      }
+      .mcq-options li {
+        margin: 3px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- Top Header: Academy Name, Subject, Grade, etc. -->
+    <div class="header-container">
+      <h2 class="header-line">{{academyName}}</h2>
+      <p class="header-line">Subject: {{subject}} &nbsp; | &nbsp; Grade: {{grade}}</p>
+      <p class="header-line">Total Marks: {{totalMarks}} &nbsp; | &nbsp; Time: {{timeDuration}}</p>
+    </div>
+
+    {{#sections}}
+      <!-- A row for the section title + the right-aligned marks breakdown -->
+      <div class="section-title-row">
+        <h2>Section {{name}}</h2>
+        <div class="marks-breakdown">
+          ({{sectionNumberOfQuestions}} x {{sectionMarks}}) = {{sectionTotalMarks}}
+        </div>
+      </div>
+
+      <ol class="question-list">
+        {{#questions}}
+        <li>
+          <span class="question-text">
+            {{question}}
+          </span>
+          {{#isMCQ}}
+            <ul class="mcq-options">
+              {{#options}}
+                <li>{{key}}) {{option}}</li>
+              {{/options}}
+            </ul>
+          {{/isMCQ}}
+        </li>
+        {{/questions}}
+      </ol>
+    {{/sections}}
+
+  </body>
+</html>

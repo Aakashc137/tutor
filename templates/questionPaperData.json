@@ -1,0 +1,70 @@
+{
+    "sections": [
+        {
+            "name": "A",
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "Solve for x: 3x + 5 = 11.",
+                    "isMCQ": true,
+                    "options": [
+                        {
+                            "key": "A",
+                            "option": "3"
+                        },
+                        {
+                            "key": "B",
+                            "option": "2"
+                        },
+                        {
+                            "key": "C",
+                            "option": "1"
+                        },
+                        {
+                            "key": "D",
+                            "option": "4"
+                        }
+                    ]
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "What is the solution of the equation 2(y - 3) = 4?",
+                    "isMCQ": true,
+                    "options": [
+                        {
+                            "key": "A",
+                            "option": "3"
+                        },
+                        {
+                            "key": "B",
+                            "option": "5"
+                        },
+                        {
+                            "key": "C",
+                            "option": "7"
+                        },
+                        {
+                            "key": "D",
+                            "option": "9"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "B",
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "Solve the equation: 2x - 7 = 3.",
+                    "isMCQ": false
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "If 4 times a number decreased by 6 equals 10, find the number.",
+                    "isMCQ": false
+                }
+            ]
+        }
+    ]
+}
