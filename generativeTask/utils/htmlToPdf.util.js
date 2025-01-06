@@ -25,8 +25,6 @@ export async function handleGeneratePDFs(combinedHTML) {
     };
   
     // Generate PDFs
-    await createPdf(combinedHTML, './QuestionPaper.pdf');
-    await createPdf(AnswerSheet, './AnswerSheet.pdf');
-  
-    return { message: 'PDFs generated successfully.' };
+    await createPdf(combinedHTML, '/Users/aakash/Learning/tutor/QuestionPaper.pdf');
+    return outputPath;
   }

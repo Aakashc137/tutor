@@ -1,33 +1,29 @@
+import fs from 'fs';
+import Mustache from 'mustache';
+import s3 from './s3.js';
+
 export function structureQuestionPaper(questionPaper) {
-  // 1. Determine if there are any MCQ questions
   const hasMCQ = questionPaper.some(q => q.type === 'MCQ');
 
-  // 2. Separate MCQ & descriptive
   const mcqQuestions = questionPaper.filter(q => q.type === 'MCQ');
   const descriptiveQuestions = questionPaper.filter(q => q.type !== 'MCQ');
 
-  // 3. Identify distinct marks among descriptive for assigning sections
   const distinctMarksSet = new Set(descriptiveQuestions.map(q => q.marks));
   const distinctMarks = Array.from(distinctMarksSet).sort((a, b) => a - b);
 
-  // 4. Start from 'A'. If we have MCQs, 'A' is for MCQs, so move next to 'B'
   let nextSectionCharCode = 'A'.charCodeAt(0);
   if (hasMCQ) {
-    // Reserve 'A' for all MCQs
     nextSectionCharCode++;
   }
 
-  // 5. Build a map from marks -> section letter
   const marksToSection = {};
   distinctMarks.forEach(mark => {
     marksToSection[mark] = String.fromCharCode(nextSectionCharCode);
     nextSectionCharCode++;
   });
 
-  // 6. Build a new array with updated info (section & questionNumber)
   const newQuestionPaper = [];
 
-  // 6a. If MCQ exists, they all go to section A with questionNumber 1..n
   if (hasMCQ) {
     let mcqCounter = 1;
     mcqQuestions.forEach(q => {
@@ -39,11 +35,10 @@ export function structureQuestionPaper(questionPaper) {
     });
   }
 
-  // 6b. Descriptive questions get sections based on their marks
   const sectionToCounter = {};
   descriptiveQuestions.forEach(q => {
     const section = marksToSection[q.marks];
-    if (!section) return; // Should not happen unless question has an unexpected mark
+    if (!section) return;
 
     if (sectionToCounter[section] == null) {
       sectionToCounter[section] = 1;
@@ -58,7 +53,6 @@ export function structureQuestionPaper(questionPaper) {
     sectionToCounter[section]++;
   });
 
-  // 7. Group the newly structured questions by section
   const sectionMap = {};
   newQuestionPaper.forEach(q => {
     const s = q.section;
@@ -68,26 +62,19 @@ export function structureQuestionPaper(questionPaper) {
     sectionMap[s].push(q);
   });
 
-  // 8. Build the final sections array
-  //    Sort section keys (A, B, C, ...)
   const sections = Object.keys(sectionMap)
     .sort()
     .map(sectionName => {
-      // All questions in this section
       const questionsInSection = sectionMap[sectionName];
 
-      // Because we group by marks, each question in this section should have the same marks
-      // So we can just take it from the first question
       const sectionMarks =
         questionsInSection.length > 0 ? questionsInSection[0].marks : 0;
 
-      // Sum up the marks of all questions in the section (they should be identical anyway)
       const sectionTotalMarks = questionsInSection.reduce(
         (acc, q) => acc + (q.marks || 0),
         0
       );
 
-      // Prepare the "questions" array in the desired minimal format
       const simpleQuestions = questionsInSection.map(q => {
         return {
           questionNumber: q.questionNumber,
@@ -98,14 +85,289 @@ export function structureQuestionPaper(questionPaper) {
       });
 
       return {
-        name: sectionName,                 // e.g. "A", "B", ...
+        name: sectionName,                 
         sectionNumberOfQuestions: simpleQuestions.length,
-        sectionMarks,                      // single number
-        sectionTotalMarks,                 // sum
+        sectionMarks,                     
+        sectionTotalMarks,                
         questions: simpleQuestions,
       };
     });
 
-  // 9. Return final structure
   return { sections, grade: "10", academyName: "Sample Input Academy Name", totalMarks: "85", subject: "Maths" };
 }
+
+function addStepIndexes(calculationSteps) {
+  return calculationSteps.map((step, idx) => ({
+    ...step,
+    stepIndex: (idx + 1), // "1)", "2)", ...
+  }));
+}
+
+export function structureSolution(questionPaper) {
+  const hasMCQ = questionPaper.some(q => q.type === 'MCQ');
+
+  const mcqQuestions = questionPaper.filter(q => q.type === 'MCQ');
+  const descriptiveQuestions = questionPaper.filter(q => q.type !== 'MCQ');
+
+  const distinctMarksSet = new Set(descriptiveQuestions.map(q => q.marks));
+  const distinctMarks = Array.from(distinctMarksSet).sort((a, b) => a - b);
+
+  let nextSectionCharCode = 'A'.charCodeAt(0);
+  if (hasMCQ) {
+    nextSectionCharCode++; // 'A' reserved for MCQ
+  }
+
+  const marksToSection = {};
+  distinctMarks.forEach(mark => {
+    marksToSection[mark] = String.fromCharCode(nextSectionCharCode);
+    nextSectionCharCode++;
+  });
+
+  const newQuestionPaper = [];
+
+  if (hasMCQ) {
+    let mcqCounter = 1;
+    mcqQuestions.forEach(q => {
+      newQuestionPaper.push({
+        ...q,
+        section: 'A',
+        questionNumber: mcqCounter++,
+      });
+    });
+  }
+
+  const sectionToCounter = {};
+  descriptiveQuestions.forEach(q => {
+    const sec = marksToSection[q.marks];
+    if (!sec) return;
+
+    if (sectionToCounter[sec] == null) {
+      sectionToCounter[sec] = 1;
+    }
+
+    newQuestionPaper.push({
+      ...q,
+      section: sec,
+      questionNumber: sectionToCounter[sec],
+    });
+
+    sectionToCounter[sec]++;
+  });
+
+  const sectionMap = {};
+  newQuestionPaper.forEach(q => {
+    if (!sectionMap[q.section]) {
+      sectionMap[q.section] = [];
+    }
+    sectionMap[q.section].push(q);
+  });
+
+  const sections = Object.keys(sectionMap)
+    .sort()
+    .map(sectionName => {
+      const questionsInSection = sectionMap[sectionName];
+
+      const sectionMarks = questionsInSection.length > 0
+        ? questionsInSection[0].marks
+        : 0;
+
+      const sectionTotalMarks = questionsInSection.reduce(
+        (acc, q) => acc + (q.marks || 0),
+        0
+      );
+
+      const structuredQuestions = questionsInSection.map(q => {
+        let correctAnswerLabel = q.correctAnswer;   
+        let correctAnswerOption = q.correctAnswer;
+
+        if (q.type === 'MCQ' && Array.isArray(q.options)) {
+          const found = q.options.find(opt => opt.key === q.correctAnswer);
+          if (found) {
+            correctAnswerOption = found.option;
+          }
+        }
+
+        const orderedCalculationSteps = addStepIndexes(q.calculationSteps);
+
+        return {
+          questionNumber: q.questionNumber,
+          question: q.question,
+          marks: q.marks,
+          topic: q.topic,
+          difficulty: q.difficulty,
+          isMCQ: (q.type === 'MCQ'),
+          correctAnswer: q.correctAnswer, 
+          correctAnswerLabel,           
+          correctAnswerOption,           
+          calculationSteps: orderedCalculationSteps || []
+        };
+      });
+
+      return {
+        name: sectionName,
+        sectionNumberOfQuestions: structuredQuestions.length,
+        sectionMarks,
+        sectionTotalMarks,
+        questions: structuredQuestions,
+      };
+    });
+
+  // 8. Return final object with top-level fields
+  return {
+    academyName: "Sample Input Academy Name",
+    subject: "Maths",
+    grade: "10",
+    totalMarks: "85",
+    timeDuration: "3 Hours",
+    sections
+  };
+}
+
+export function generateHTML(structuredQuestionPaper, templatePath) {
+    const template = fs.readFileSync(templatePath, 'utf-8');
+    return Mustache.render(template, structuredQuestionPaper);
+}
+
+export function getOpenAIMessages(req, prompts) {
+  const { blueprint } = req.body;
+
+  const systemPrompt = prompts.generateQuestionPaper.system;
+  const userPrompt = prompts.generateQuestionPaper.user.replace(
+      '```json\n{\n    "blueprint": []\n}\n```',
+      `\`\`\`json\n${JSON.stringify({ blueprint }, null, 4)}\n\`\`\``
+  );
+
+  return [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+  ];
+}
+
+export async function uploadToS3(content, name, blueprint, fileType) {
+    const fileKey = `questionPapers/${name}.${fileType}`;
+    const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: fileKey,
+        Body: content,
+        ContentType: fileType === 'html' ? 'text/html' : 'application/pdf',
+    };
+    
+    await s3.upload(uploadParams).promise();
+    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+    return fileUrl;
+}
+
+export function getResponseFormat() {
+  return {
+      type: 'json_schema',
+      json_schema: {
+          name: 'quiz_schema',
+          strict: true,
+          schema: {
+              type: 'object',
+              properties: {
+                  answer: {
+                      type: 'array',
+                      description: 'A collection of answers, each can be a multiple choice or descriptive question.',
+                      items: {
+                          type: 'object',
+                          properties: {
+                              type: {
+                                  type: 'string',
+                                  enum: ['MCQ', 'Descriptive'],
+                                  description: 'The type of the question.',
+                              },
+                              questionId: {
+                                  type: 'string',
+                                  description: 'The questionId of the question corresponding to the description of the question in the prompt',
+                              },
+                              question: {
+                                  type: 'string',
+                                  description: 'The question being asked.',
+                              },
+                              marks: {
+                                  type: 'number',
+                                  description: 'The marks assigned for the question.',
+                              },
+                              options: {
+                                  anyOf: [
+                                      {
+                                          type: 'array',
+                                          description: 'Options for multiple choice questions.',
+                                          items: {
+                                              type: 'object',
+                                              properties: {
+                                                  key: {
+                                                      type: 'string',
+                                                      description: 'The key for the option, e.g., A, B, C, D.',
+                                                  },
+                                                  option: {
+                                                      type: 'string',
+                                                      description: 'The text of the option.',
+                                                  },
+                                              },
+                                              required: ['key', 'option'],
+                                              additionalProperties: false,
+                                          },
+                                      },
+                                      {
+                                          type: 'null',
+                                          description: 'Null for descriptive questions without options.',
+                                      },
+                                  ],
+                              },
+                              difficulty: {
+                                  type: 'string',
+                                  enum: ['EASY', 'MEDIUM', 'HARD'],
+                                  description: 'The difficulty level of the question.',
+                              },
+                              topic: {
+                                  type: 'string',
+                                  description: 'The topic related to the question.',
+                              },
+                              correctAnswer: {
+                                  type: 'string',
+                                  description: 'The correct answer for the question.',
+                              },
+                              calculationSteps: {
+                                  type: 'array',
+                                  description: 'Steps to arrive at the solution.',
+                                  items: {
+                                      type: 'object',
+                                      properties: {
+                                          chainOfThoughtExplanation: {
+                                              type: 'string',
+                                              description: 'Explanation of the thought process.',
+                                          },
+                                          equation: {
+                                              type: 'string',
+                                              description: 'The equation or result at this step.',
+                                          },
+                                      },
+                                      required: ['chainOfThoughtExplanation', 'equation'],
+                                      additionalProperties: false,
+                                  },
+                              },
+                          },
+                          required: [
+                              'type',
+                              'questionId',
+                              'question',
+                              'marks',
+                              'options',
+                              'difficulty',
+                              'topic',
+                              'correctAnswer',
+                              'calculationSteps',
+                          ],
+                          additionalProperties: false,
+                      },
+                  },
+              },
+              required: ['answer'],
+              additionalProperties: false,
+          },
+      },
+  };
+}
+

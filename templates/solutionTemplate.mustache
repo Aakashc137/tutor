@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Solution Sheet</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+
+      .header-container {
+        max-height: 20vh;
+        margin-bottom: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .header-line {
+        margin: 4px 0;
+      }
+      .meta-line {
+        font-size: 0.9em;
+        font-style: italic;
+        font-weight: 300;
+        margin: 3px 0;
+      }
+
+      .section-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .section-title-row h2 {
+        margin: 0;
+      }
+
+      .marks-breakdown {
+        text-align: right;
+        font-weight: normal;
+        font-size: 1rem;
+      }
+
+      ol.solution-list {
+        margin: 0 0 20px 40px;
+        padding: 0;
+      }
+      ol.solution-list li {
+        margin-bottom: 20px;
+      }
+
+      .content-block {
+        margin-left: 5px;
+      }
+
+      .question-header {
+        /* No questionNumber here, just the question text */
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      /* Keeps topic/difficulty/marks in italic style. 
+         If you want them normal, remove or override. */
+      .metadata-line {
+        font-size: 0.9em;
+        font-style: italic;
+        font-weight: 300; 
+        margin-bottom: 5px;
+      }
+
+      /* "Correct Answer" in normal style (same as Solution). */
+      .solution-line {
+        margin: 5px 0;
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      .solution-steps {
+        margin-top: 10px;
+      }
+      .solution-step-item {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Header: Academy, subject, grade, total marks, time -->
+    <div class="header-container">
+      <h2 class="header-line">{{academyName}}</h2>
+      <p class="meta-line">
+        Subject: {{subject}} &nbsp; | &nbsp; Grade: {{grade}} &nbsp; | &nbsp; Total Marks: {{totalMarks}} &nbsp; | &nbsp; Time: {{timeDuration}}
+      </p>
+    </div>
+
+    {{#sections}}
+      <div class="section-title-row">
+        <h2>Section {{name}}</h2>
+        <div class="marks-breakdown">
+          ({{sectionNumberOfQuestions}} x {{sectionMarks}}) = {{sectionTotalMarks}}
+        </div>
+      </div>
+
+      <ol class="solution-list">
+        {{#questions}}
+        <li>
+          <div class="content-block">
+            <!-- Just the question text, no number -->
+            <div class="question-header">
+              {{question}}
+            </div>
+
+            <!-- Topic, difficulty, marks if you want italic style -->
+            <p class="metadata-line">
+              Topic: {{topic}} • Difficulty: {{difficulty}} • Marks: {{marks}}
+            </p>
+
+            <!-- Correct Answer in normal style -->
+            {{#isMCQ}}
+                <p> <strong>Correct Answer:</strong> {{correctAnswerLabel}} ({{correctAnswerOption}})</p>
+            {{/isMCQ}}
+            {{^isMCQ}}
+               <p> <strong>Correct Answer:</strong> {{correctAnswer}} </p>
+            {{/isMCQ}}
+
+            <!-- "Solution" block with enumerated steps -->
+            <div class="solution-steps">
+              <strong>Solution</strong>
+              <div>
+                {{#calculationSteps}}
+                <div class="solution-step-item">
+                  <!-- Must pass stepIndex in your data, e.g. "1)", "i)", etc. -->
+                  Step {{stepIndex}}: {{equation}}<br/>
+                  Explanation: {{chainOfThoughtExplanation}}
+                </div>
+                {{/calculationSteps}}
+              </div>
+            </div>
+          </div>
+        </li>
+        {{/questions}}
+      </ol>
+    {{/sections}}
+  </body>
+</html>
