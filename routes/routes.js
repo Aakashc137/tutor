@@ -6,7 +6,7 @@ import { extractRouter } from './extractRoutes.js';
 import { verifyAccessToken } from '../middlewares/auth.middleware.js';
 import { userRouter } from './userRoutes.js';
 import { blueprintRouter } from './blueprintRoutes.js';
-import { generativeTaskRouter } from './generativeTaskRoutes.js';
+import { questionPaperRouter } from './questionPaperRoutes.js';
 
 const router = express.Router();
 
@@ -23,6 +23,6 @@ router.use('/message', verifyAccessToken, messageRouter);
 router.use('/user', verifyAccessToken, userRouter);
 router.use('/extract', verifyAccessToken, extractRouter);
 router.use('/blueprint', verifyAccessToken, blueprintRouter);
-router.use('/generativeTask',verifyAccessToken, generativeTaskRouter);
+router.use('/questionPaper', verifyAccessToken, questionPaperRouter);
 
 export default router;
