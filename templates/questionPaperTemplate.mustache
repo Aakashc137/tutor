@@ -10,7 +10,7 @@
         line-height: 1.6;
       }
 
-      /* 
+      /*
         Limit the header portion to roughly 20% of page height.
         This won't be exact in all browsers, but it's a typical approach.
       */
@@ -43,7 +43,7 @@
       }
 
       .marks-breakdown {
-        text-align: right; 
+        text-align: right;
         font-weight: normal;
         font-size: 1rem; /* slightly smaller if you like */
       }
@@ -60,10 +60,11 @@
         font-weight: bold;
         margin-bottom: 5px;
       }
+      /* Changed from <ul> to <ol>, and added a start attribute */
       .mcq-options {
-        list-style-type: none;
-        padding-left: 20px;
         margin-top: 5px;
+        margin-left: 20px;
+        padding: 0;
       }
       .mcq-options li {
         margin: 3px 0;
@@ -72,12 +73,15 @@
   </head>
 
   <body>
-
     <!-- Top Header: Academy Name, Subject, Grade, etc. -->
     <div class="header-container">
       <h2 class="header-line">{{academyName}}</h2>
-      <p class="header-line">Subject: {{subject}} &nbsp; | &nbsp; Grade: {{grade}}</p>
-      <p class="header-line">Total Marks: {{totalMarks}} &nbsp; | &nbsp; Time: {{timeDuration}}</p>
+      <p class="header-line">
+        Subject: {{subject}} &nbsp; | &nbsp; Grade: {{grade}}
+      </p>
+      <p class="header-line">
+        Total Marks: {{totalMarks}} &nbsp; | &nbsp; Time: {{timeDuration}}
+      </p>
     </div>
 
     {{#sections}}
@@ -85,7 +89,8 @@
       <div class="section-title-row">
         <h2>Section {{name}}</h2>
         <div class="marks-breakdown">
-          ({{sectionNumberOfQuestions}} x {{sectionMarks}}) = {{sectionTotalMarks}}
+          ({{sectionNumberOfQuestions}} x {{sectionMarks}})
+          = {{sectionTotalMarks}}
         </div>
       </div>
 
@@ -96,11 +101,12 @@
             {{question}}
           </span>
           {{#isMCQ}}
-            <ul class="mcq-options">
+            <!-- Use an ordered list with start="1" so options are automatically numbered -->
+            <ol class="mcq-options" start="1">
               {{#options}}
                 <li>{{key}}) {{option}}</li>
               {{/options}}
-            </ul>
+            </ol>
           {{/isMCQ}}
         </li>
         {{/questions}}
