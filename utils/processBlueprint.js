@@ -15,8 +15,7 @@ export function processBlueprintData(data) {
     }
 
     // Determine the question type
-    const questionType =
-      type === "Multiple Choice Question" ? "MCQ" : "Descriptive";
+    const questionType = type;
     const questionMarks = parseInt(marks, 10);
 
     // Check if the marks already exist in the MCQ or Descriptive array for the topic
@@ -54,7 +53,7 @@ export function processResponseData(data) {
     }
 
     // Determine the question type (MCQ or Descriptive)
-    const questionType = type === "MCQ" ? "MCQ" : "Descriptive";
+    const questionType = type
     const questionMarks = parseInt(marks, 10); // Ensure marks are treated as integers
 
     // Check if the marks already exist in the MCQ or Descriptive array for the topic
@@ -140,7 +139,7 @@ export function convertDiffToArray(diffData) {
           topic: topic,
           difficulty: getRandomDifficulty(),
           marks: marks,
-          type: "Multiple Choice Question"
+          type: "MCQ"
         });
       }
     });

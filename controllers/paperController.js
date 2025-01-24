@@ -29,8 +29,17 @@ const MAX_RETRY_COUNT = 4;
 class QuestionPaperController {
   async generateQuestionPaper(req, res) {
     try {
-      const { name, blueprint, grade, subject, totalMarks, lengthOfBlueprint, numberOfSets = 1, academyName, timeDuration } =
-        req.body;
+      const {
+        name,
+        blueprint,
+        grade,
+        subject,
+        totalMarks,
+        lengthOfBlueprint,
+        numberOfSets = 1,
+        academyName,
+        timeDuration,
+      } = req.body;
       let bluePrintToUseForPrompts = blueprint;
       const REQUIRED_FIELDS = [
         { field: blueprint, message: "Blueprint is required" },
@@ -38,7 +47,7 @@ class QuestionPaperController {
         { field: grade, message: "Grade is required" },
         { field: subject, message: "Subject is required" },
       ];
-      const bluePrintHashMap = processBlueprintData(blueprint);
+      // const bluePrintHashMap = processBlueprintData(blueprint);
       for (const { field, message } of REQUIRED_FIELDS) {
         if (!field) {
           return res.status(400).json({ error: message });
@@ -73,20 +82,18 @@ class QuestionPaperController {
           response_format: responseFormat,
         });
         const result = response.choices[0].message.parsed;
-        console.log("result length", result.answer.length)
         questionPaper = [...questionPaper, ...result.answer];
-        console.log("questionPaper length", questionPaper.length)
         if (questionPaper && questionPaper.length >= lengthOfBlueprint) {
           break;
         }
-        const openAiHashMap = processResponseData(questionPaper);
-        const diffInResults = compareBluePrintAndOpenaiHashmaps(
-          bluePrintHashMap,
-          openAiHashMap
-        );
-        const diffBluePrintForRemainingQuestions =
-          convertDiffToArray(diffInResults);
-        bluePrintToUseForPrompts = diffBluePrintForRemainingQuestions;
+        // const openAiHashMap = processResponseData(questionPaper);
+        // const diffInResults = compareBluePrintAndOpenaiHashmaps(
+        //   bluePrintHashMap,
+        //   openAiHashMap
+        // );
+        // const diffBluePrintForRemainingQuestions =
+        //   convertDiffToArray(diffInResults);
+        // bluePrintToUseForPrompts = diffBluePrintForRemainingQuestions;
         retryCount++;
       }
       const structuredQuestionPaper = structureQuestionPaper({
@@ -95,12 +102,15 @@ class QuestionPaperController {
         academyName,
         totalMarks,
         subject,
-        timeDuration
+        timeDuration,
       });
 
       let allQuestionPapersSets = [structuredQuestionPaper];
       if (numberOfSets > 1) {
-        allQuestionPapersSets = createQuestionPaperSets(structuredQuestionPaper, numberOfSets);
+        allQuestionPapersSets = createQuestionPaperSets(
+          structuredQuestionPaper,
+          numberOfSets
+        );
       }
       const structuredSolution = structureSolution({
         questionPaper,
@@ -214,7 +224,6 @@ class QuestionPaperController {
         .json({ error: "Failed to fetch paginated question papers" });
     }
   }
-
 
   async deleteQuestionPaper(req, res) {
     try {
