@@ -30,11 +30,11 @@ export const QuestionPaper = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    // questionPapersLinks: {
-    //   type: DataTypes.ARRAY(DataTypes.STRING),
-    //   allowNull: true,
-    //   defaultValue: [],
-    // },
+    questionPapersLinks: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: [],
+    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
