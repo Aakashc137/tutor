@@ -10,14 +10,10 @@
         line-height: 1.6;
       }
 
-      /*
-        Limit the header portion to roughly 20% of page height.
-        This won't be exact in all browsers, but it's a typical approach.
-      */
       .header-container {
-        max-height: 20vh; /* ~1/5 of the visible page height */
+        max-height: 20vh;
         margin-bottom: 20px;
-        overflow: hidden; /* if text exceeds 20vh, it won't expand further */
+        overflow: hidden;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -31,21 +27,17 @@
 
       .section-title-row {
         display: flex;
-        justify-content: space-between; /* pushes marks breakdown to the right */
+        justify-content: space-between;
         align-items: baseline;
         margin-top: 40px;
         margin-bottom: 10px;
         text-transform: uppercase;
       }
 
-      .section-title-row h2 {
-        margin: 0;
-      }
-
       .marks-breakdown {
         text-align: right;
         font-weight: normal;
-        font-size: 1rem; /* slightly smaller if you like */
+        font-size: 1rem;
       }
 
       ol.question-list {
@@ -60,7 +52,6 @@
         font-weight: bold;
         margin-bottom: 5px;
       }
-      /* Changed from <ul> to <ol>, and added a start attribute */
       .mcq-options {
         margin-top: 5px;
         margin-left: 20px;
@@ -70,10 +61,12 @@
         margin: 3px 0;
       }
     </style>
+
+    <!-- Include MathJax -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   </head>
 
   <body>
-    <!-- Top Header: Academy Name, Subject, Grade, etc. -->
     <div class="header-container">
       <h2 class="header-line">{{academyName}}</h2>
       <p class="header-line">
@@ -85,7 +78,6 @@
     </div>
 
     {{#sections}}
-      <!-- A row for the section title + the right-aligned marks breakdown -->
       <div class="section-title-row">
         <h2>Section {{name}}</h2>
         <div class="marks-breakdown">
@@ -100,11 +92,14 @@
           <span class="question-text">
             {{question}}
           </span>
+          {{#isMath}}
+            <!-- Render math equations -->
+            <div>\[ {{mathExpression}} \]</div>
+          {{/isMath}}
           {{#isMCQ}}
-            <!-- Use an ordered list with start="1" so options are automatically numbered -->
             <ol class="mcq-options">
               {{#options}}
-                <li>{{key}}) {{option}}</li>
+                <li> {{option}}</li>
               {{/options}}
             </ol>
           {{/isMCQ}}
@@ -112,6 +107,5 @@
         {{/questions}}
       </ol>
     {{/sections}}
-
   </body>
 </html>

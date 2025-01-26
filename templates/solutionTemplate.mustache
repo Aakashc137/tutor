@@ -60,13 +60,10 @@
       }
 
       .question-header {
-        /* No questionNumber here, just the question text */
         font-weight: bold;
         margin-bottom: 5px;
       }
 
-      /* Keeps topic/difficulty/marks in italic style. 
-         If you want them normal, remove or override. */
       .metadata-line {
         font-size: 0.9em;
         font-style: italic;
@@ -74,7 +71,6 @@
         margin-bottom: 5px;
       }
 
-      /* "Correct Answer" in normal style (same as Solution). */
       .solution-line {
         margin: 5px 0;
         font-weight: normal;
@@ -88,6 +84,9 @@
         margin-bottom: 10px;
       }
     </style>
+
+    <!-- Include MathJax -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   </head>
 
   <body>
@@ -111,32 +110,39 @@
         {{#questions}}
         <li>
           <div class="content-block">
-            <!-- Just the question text, no number -->
+            <!-- Question Text -->
             <div class="question-header">
               {{question}}
             </div>
 
-            <!-- Topic, difficulty, marks if you want italic style -->
+            <!-- Metadata -->
             <p class="metadata-line">
               Topic: {{topic}} • Difficulty: {{difficulty}} • Marks: {{marks}}
             </p>
 
-            <!-- Correct Answer in normal style -->
+            <!-- Correct Answer -->
             {{#isMCQ}}
-                <p> <strong>Correct Answer:</strong> {{correctAnswerLabel}} ({{correctAnswerOption}})</p>
+              <p>
+                <strong>Correct Answer:</strong> {{correctAnswerLabel}} ({{correctAnswerOption}})
+              </p>
             {{/isMCQ}}
             {{^isMCQ}}
-               <p> <strong>Correct Answer:</strong> {{correctAnswer}} </p>
+              <p>
+                <strong>Correct Answer:</strong> {{correctAnswer}}
+              </p>
             {{/isMCQ}}
 
-            <!-- "Solution" block with enumerated steps -->
+            <!-- Solution with Steps -->
             <div class="solution-steps">
-              <strong>Solution</strong>
+              <strong>Solution:</strong>
               <div>
                 {{#calculationSteps}}
                 <div class="solution-step-item">
-                  <!-- Must pass stepIndex in your data, e.g. "1)", "i)", etc. -->
-                  Step {{stepIndex}}: {{equation}}<br/>
+                  <!-- Math Equation (rendered by MathJax) -->
+                  Step {{stepIndex}}: 
+                  <div>
+                    \[ {{equation}} \]
+                  </div>
                   Explanation: {{chainOfThoughtExplanation}}
                 </div>
                 {{/calculationSteps}}
@@ -147,5 +153,12 @@
         {{/questions}}
       </ol>
     {{/sections}}
+
+    <!-- Trigger MathJax rendering -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        MathJax.typeset();
+      });
+    </script>
   </body>
 </html>
