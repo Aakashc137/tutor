@@ -16,7 +16,10 @@ import {
   sendMessageOfCompletion,
   sendMessageOfFailure,
 } from "./questionController.js";
-import { DUMMY_QUESTION_PAPER } from "../utils/dummyQuestionPaper.js";
+import {
+  DUMMY_MATH_QUESTION_PAPER,
+  DUMMY_MATH_SOLUTION_PAPER,
+} from "../utils/dummyQuestionPaper.js";
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -89,67 +92,67 @@ class QuestionPaperController {
       let questionPaper = [];
       let leftoverBlueprint = blueprint; // blueprint for leftover questions to be generated. Will be all questions for the first try
 
-      while (retryCount < MAX_RETRY_COUNT) {
-        let messages = getOpenAIMessages(leftoverBlueprint, prompts);
-        const response = await openai.beta.chat.completions.parse({
-          model: "gpt-4o",
-          messages,
-          response_format: responseFormat,
-        });
+      // while (retryCount < MAX_RETRY_COUNT) {
+      //   let messages = getOpenAIMessages(leftoverBlueprint, prompts);
+      //   const response = await openai.beta.chat.completions.parse({
+      //     model: "gpt-4o",
+      //     messages,
+      //     response_format: responseFormat,
+      //   });
 
-        const result = response.choices[0].message.parsed;
-        const generatedQuestionPaper = result.answer ?? [];
-        questionPaper = [...questionPaper, ...generatedQuestionPaper]; // append leftover questions to the generated questions. Will be all questions for the first try
+      //   const result = response.choices[0].message.parsed;
+      //   const generatedQuestionPaper = result.answer ?? [];
+      //   questionPaper = [...questionPaper, ...generatedQuestionPaper]; // append leftover questions to the generated questions. Will be all questions for the first try
 
-        // Identify missing questions
-        const blueprintQuestionIds = leftoverBlueprint.map(
-          (question) => question.questionId
-        );
-        const generatedQuestionIds = generatedQuestionPaper.map(
-          (question) => question.questionId
-        );
-        const missingQuestionIds = lodash.difference(
-          blueprintQuestionIds,
-          generatedQuestionIds
-        );
+      //   // Identify missing questions
+      //   const blueprintQuestionIds = leftoverBlueprint.map(
+      //     (question) => question.questionId
+      //   );
+      //   const generatedQuestionIds = generatedQuestionPaper.map(
+      //     (question) => question.questionId
+      //   );
+      //   const missingQuestionIds = lodash.difference(
+      //     blueprintQuestionIds,
+      //     generatedQuestionIds
+      //   );
 
-        // If missing questions are found, update leftoverBlueprint and retry generating the missing questions using leftoverBlueprint
-        if (missingQuestionIds.length !== 0) {
-          console.log(
-            `Missing questions: ${JSON.stringify(missingQuestionIds)}`
-          );
-          leftoverBlueprint = blueprint.filter((question) =>
-            missingQuestionIds.includes(question.questionId)
-          );
-          retryCount++;
-          continue;
-        }
-        break;
-      }
+      //   // If missing questions are found, update leftoverBlueprint and retry generating the missing questions using leftoverBlueprint
+      //   if (missingQuestionIds.length !== 0) {
+      //     console.log(
+      //       `Missing questions: ${JSON.stringify(missingQuestionIds)}`
+      //     );
+      //     leftoverBlueprint = blueprint.filter((question) =>
+      //       missingQuestionIds.includes(question.questionId)
+      //     );
+      //     retryCount++;
+      //     continue;
+      //   }
+      //   break;
+      // }
 
-      if (retryCount === MAX_RETRY_COUNT) {
-        console.error("Failed to generate question paper");
-        generatedPaper.update({ status: "failed" });
-        await sendMessageOfFailure({
-          countryCode: "+91",
-          mobileNumber: req.user.mobileNumber,
-          name,
-        });
-        return;
-      }
+      // if (retryCount === MAX_RETRY_COUNT) {
+      //   console.error("Failed to generate question paper");
+      //   generatedPaper.update({ status: "failed" });
+      //   await sendMessageOfFailure({
+      //     countryCode: "+91",
+      //     mobileNumber: req.user.mobileNumber,
+      //     name,
+      //   });
+      //   return;
+      // }
 
-      // Remove all extra responses from the generated questions (if any)
-      questionPaper = questionPaper.filter((question) =>
-        blueprintQuestionIds.includes(question.questionId)
-      );
-      const derivedMarks = questionPaper.reduce(
-        (acc, question) => acc + question.marks,
-        0
-      );
+      // // Remove all extra responses from the generated questions (if any)
+      // questionPaper = questionPaper.filter((question) =>
+      //   blueprintQuestionIds.includes(question.questionId)
+      // );
+      // const derivedMarks = questionPaper.reduce(
+      //   (acc, question) => acc + question.marks,
+      //   0
+      // );
 
       // Structure Generated Question Paper according to sections
-      const structuredQuestionPaper = DUMMY_QUESTION_PAPER
-
+      const structuredQuestionPaper = DUMMY_MATH_QUESTION_PAPER;
+      const structuredSolution = DUMMY_MATH_SOLUTION_PAPER;
       // Create multipleSets of question papers if numberOfSets > 1
       let allQuestionPapersSets = [structuredQuestionPaper];
       if (numberOfSets > 1) {
@@ -160,21 +163,19 @@ class QuestionPaperController {
       }
 
       // Structure Generated Solution according to sections
-      const structuredSolution = structureSolution({
-        questionPaper,
-        grade,
-        academyName,
-        totalMarks: totalMarks ?? derivedMarks,
-        subject,
-        timeDuration,
-      });
+      // const structuredSolution = structureSolution({
+      //   questionPaper,
+      //   grade,
+      //   academyName,
+      //   totalMarks: totalMarks ?? derivedMarks,
+      //   subject,
+      //   timeDuration,
+      // });
 
       console.log(
         JSON.stringify(structuredQuestionPaper),
         "structured question paper"
       );
-      console.log(JSON.stringify(structuredSolution), "structured solution");
-
       // Render HTML from the structured question paper
       const renderedQuestionPaperHTMLs = [];
       for (const questionPaper of allQuestionPapersSets) {
