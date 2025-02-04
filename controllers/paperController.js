@@ -16,6 +16,7 @@ import {
   sendMessageOfCompletion,
   sendMessageOfFailure,
 } from "./questionController.js";
+import { DUMMY_QUESTION_PAPER } from "../utils/dummyQuestionPaper.js";
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -147,14 +148,7 @@ class QuestionPaperController {
       );
 
       // Structure Generated Question Paper according to sections
-      const structuredQuestionPaper = structureQuestionPaper({
-        questionPaper,
-        grade,
-        academyName,
-        totalMarks: totalMarks ?? derivedMarks,
-        subject,
-        timeDuration,
-      });
+      const structuredQuestionPaper = DUMMY_QUESTION_PAPER
 
       // Create multipleSets of question papers if numberOfSets > 1
       let allQuestionPapersSets = [structuredQuestionPaper];
