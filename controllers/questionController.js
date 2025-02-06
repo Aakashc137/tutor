@@ -1,57 +1,104 @@
-import { plivoClient } from "../utils/plivoClient.js";
+import { Sequelize } from "sequelize";
+import { Question } from "../models/question.js";
 
-export const sendMessageOfCompletion = async ({
-  countryCode,
-  mobileNumber,
-  name,
-}) => {
-  const URL_TO_REDIRECT_TO = `https://www.gotutorless.com/question-paper-list`;
-  try {
-    if (!mobileNumber || !countryCode) {
-      console.error("Mobile number and country code are not present");
-      return;
+class QuestionController {
+  async getPaginatedQuestions(req, res) {
+    try {
+      const { cursor, limit = 10 } = req.query;
+      const { type, difficulty, marks } = req.body;
+      const where = {};
+
+      if (type) {
+        where.type = type;
+      }
+      if (difficulty) {
+        where.difficulty = difficulty;
+      }
+      if (marks) {
+        where.marks = marks;
+      }
+      if (cursor) {
+        where.updatedAt = { [Sequelize.Op.lt]: cursor };
+      }
+
+      const questions = await Question.findAll({
+        where,
+        order: [["updatedAt", "DESC"]],
+        limit: parseInt(limit),
+      });
+
+      const hasNextPage = questions.length === parseInt(limit);
+      const nextCursor = hasNextPage ? questions[questions.length - 1].updatedAt : null;
+
+      res.status(200).send({
+        success: true,
+        questions,
+        hasNextPage,
+        nextCursor,
+      });
+    } catch (error) {
+      console.error("Error in getPaginatedQuestions:", error);
+      res
+        .status(500)
+        .send({ success: false, message: "Failed to fetch questions" });
     }
-
-    const response = await plivoClient.messages.create(
-      process.env.PLIVO_PHONE_NUMBER,
-      `${countryCode}${mobileNumber}`,
-      `${name} question paper was generated successfully.
-      You can check the generated question paper here: ${URL_TO_REDIRECT_TO}.
-      Thank you`
-    );
-
-    if (response) {
-      console.log("Message sent succesfully");
-    }
-  } catch (error) {
-    console.error("Error sending message:", error);
   }
-};
 
-export const sendMessageOfFailure = async ({
-  countryCode,
-  mobileNumber,
-  name,
-}) => {
-  try {
-    if (!mobileNumber || !countryCode) {
-      console.error("Mobile number and country code are not present");
-      return;
+  async upsertQuestion(req, res) {
+    try {
+      const { id, type, questionText, marks, options, difficulty } = req.body;
+
+      if (!type || !questionText || marks === undefined || !difficulty) {
+        return res.status(400).send({
+          success: false,
+          message:
+            "Missing required fields: type, questionText, marks, and difficulty are required.",
+        });
+      }
+
+      let question;
+
+      if (id) {
+        question = await Question.findByPk(id);
+        if (!question) {
+          return res.status(404).send({ success: false, message: "Question not found" });
+        }
+        question = await question.update({ type, questionText, marks, options, difficulty });
+      } else {
+        question = await Question.create({ type, questionText, marks, options, difficulty });
+      }
+
+      const output = { type, questionText, marks, options, difficulty };
+
+      res.status(200).send({ success: true, question: output });
+    } catch (error) {
+      console.error("Error in upsertQuestion:", error);
+      res.status(500).send({ success: false, message: "Failed to upsert question" });
     }
-
-    const response = await plivoClient.messages.create(
-      process.env.PLIVO_PHONE_NUMBER,
-      `${countryCode}${mobileNumber}`,
-      `${name} question paper FAILED to generate.
-      This might happen due to some technical issue at our end. We apologize for the inconvenience caused.
-      You can retry generating the question paper.
-      If the problem persists, please reach out to our support team.`
-    );
-
-    if (response) {
-      console.log("Message sent succesfully");
-    }
-  } catch (error) {
-    console.error("Error sending message:", error);
   }
-};
+
+  async deleteQuestion(req, res) {
+    try {
+      const { id } = req.body;
+      if (!id) {
+        return res
+          .status(400)
+          .send({ success: false, message: "Question id is required" });
+      }
+
+      const question = await Question.findByPk(id);
+      if (!question) {
+        return res.status(404).send({ success: false, message: "Question not found" });
+      }
+
+      await Question.destroy({ where: { id } });
+
+      res.status(200).send({ success: true, message: "Question deleted successfully" });
+    } catch (error) {
+      console.error("Error in deleteQuestion:", error);
+      res.status(500).send({ success: false, message: "Failed to delete question" });
+    }
+  }
+}
+
+export const questionController = new QuestionController();

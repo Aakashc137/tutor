@@ -12,13 +12,7 @@ import {
 import { QuestionPaper } from "../models/questionPaper.js";
 import lodash from "lodash";
 import { Op } from "sequelize";
-import { sendMessageOfCompletion, sendMessageOfFailure } from "./questionController.js";
-import {
-    compareBluePrintAndOpenaiHashmaps,
-    convertDiffToArray,
-    processBlueprintData,
-    processResponseData,
-} from "../utils/processBlueprint.js";
+import { sendMessageOfCompletion, sendMessageOfFailure } from "../utils/generateQuestionPaper.util.js";
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
