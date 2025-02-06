@@ -41,16 +41,30 @@ class QuestionPaperController {
                 { field: grade, message: "grade is required in req.body" },
                 { field: subject, message: "subject is required in req.body" },
                 { field: academyName, message: "academyName is required in req.body" },
-                { field: timeDuration, message: "timeDuration is required in req.body" },
+                {
+                    field: timeDuration,
+                    message: "timeDuration is required in req.body",
+                },
             ];
             for (const { field, message } of requiredFields) {
                 if (!field) {
                     return res.status(400).json({ error: message });
                 }
             }
-            const blueprintQuestionIds = blueprint.map((question) => question.questionId);
-            if ((blueprintQuestionIds.length !== lodash.uniq(blueprintQuestionIds).length) || (blueprintQuestionIds.length !== blueprint.length)) {
-                return res.status(400).json({ error: "questionId not found in blueprint OR duplicate questionIds found in blueprint" });
+            const blueprintQuestionIds = blueprint.map(
+                (question) => question.questionId
+            );
+            if (
+                blueprintQuestionIds.length !==
+                lodash.uniq(blueprintQuestionIds).length ||
+                blueprintQuestionIds.length !== blueprint.length
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            "questionId not found in blueprint OR duplicate questionIds found in blueprint",
+                    });
             }
 
             // Create a new QuestionPaper entry with status 'inProgress'
@@ -86,14 +100,25 @@ class QuestionPaperController {
                 questionPaper = [...questionPaper, ...generatedQuestionPaper]; // append leftover questions to the generated questions. Will be all questions for the first try
 
                 // Identify missing questions
-                const blueprintQuestionIds = leftoverBlueprint.map(question => question.questionId);
-                const generatedQuestionIds = generatedQuestionPaper.map(question => question.questionId);
-                const missingQuestionIds = lodash.difference(blueprintQuestionIds, generatedQuestionIds);
+                const blueprintQuestionIds = leftoverBlueprint.map(
+                    (question) => question.questionId
+                );
+                const generatedQuestionIds = generatedQuestionPaper.map(
+                    (question) => question.questionId
+                );
+                const missingQuestionIds = lodash.difference(
+                    blueprintQuestionIds,
+                    generatedQuestionIds
+                );
 
                 // If missing questions are found, update leftoverBlueprint and retry generating the missing questions using leftoverBlueprint
                 if (missingQuestionIds.length !== 0) {
-                    console.log(`Missing questions: ${JSON.stringify(missingQuestionIds)}`);
-                    leftoverBlueprint = blueprint.filter(question => missingQuestionIds.includes(question.questionId));
+                    console.log(
+                        `Missing questions: ${JSON.stringify(missingQuestionIds)}`
+                    );
+                    leftoverBlueprint = blueprint.filter((question) =>
+                        missingQuestionIds.includes(question.questionId)
+                    );
                     retryCount++;
                     continue;
                 }
@@ -103,13 +128,22 @@ class QuestionPaperController {
             if (retryCount === MAX_RETRY_COUNT) {
                 console.error("Failed to generate question paper");
                 generatedPaper.update({ status: "failed" });
-                await sendMessageOfFailure({ countryCode: "+91", mobileNumber: req.user.mobileNumber, name });
+                await sendMessageOfFailure({
+                    countryCode: "+91",
+                    mobileNumber: req.user.mobileNumber,
+                    name,
+                });
                 return;
             }
 
             // Remove all extra responses from the generated questions (if any)
-            questionPaper = questionPaper.filter((question) => blueprintQuestionIds.includes(question.questionId));
-            const derivedMarks = questionPaper.reduce((acc, question) => acc + question.marks, 0);
+            questionPaper = questionPaper.filter((question) =>
+                blueprintQuestionIds.includes(question.questionId)
+            );
+            const derivedMarks = questionPaper.reduce(
+                (acc, question) => acc + question.marks,
+                0
+            );
 
             // Structure Generated Question Paper according to sections
             const structuredQuestionPaper = structureQuestionPaper({
