@@ -8,7 +8,7 @@ export function structureQuestionPaper({
   academyName,
   totalMarks,
   subject,
-  timeDuration
+  timeDuration,
 }) {
   const hasMCQ = questionPaper.some((q) => q.type === "MCQ");
   const mcqQuestions = questionPaper.filter((q) => q.type === "MCQ");
@@ -103,7 +103,7 @@ export function structureQuestionPaper({
     academyName,
     totalMarks,
     subject,
-    timeDuration
+    timeDuration,
   };
 }
 
@@ -120,7 +120,7 @@ export function structureSolution({
   academyName,
   totalMarks,
   subject,
-  timeDuration
+  timeDuration,
 }) {
   const hasMCQ = questionPaper.some((q) => q.type === "MCQ");
 
