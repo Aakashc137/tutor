@@ -8,7 +8,7 @@ export function structureQuestionPaper({
   academyName,
   totalMarks,
   subject,
-  timeDuration
+  timeDuration,
 }) {
   const hasMCQ = questionPaper.some((q) => q.type === "MCQ");
   const mcqQuestions = questionPaper.filter((q) => q.type === "MCQ");
@@ -103,7 +103,7 @@ export function structureQuestionPaper({
     academyName,
     totalMarks,
     subject,
-    timeDuration
+    timeDuration,
   };
 }
 
@@ -120,7 +120,7 @@ export function structureSolution({
   academyName,
   totalMarks,
   subject,
-  timeDuration
+  timeDuration,
 }) {
   const hasMCQ = questionPaper.some((q) => q.type === "MCQ");
 
@@ -271,7 +271,6 @@ export async function uploadToS3(content, name, blueprint, fileType) {
   const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
   return fileUrl;
 }
-
 export function getResponseFormat() {
   return {
     type: "json_schema",
@@ -284,7 +283,7 @@ export function getResponseFormat() {
           answer: {
             type: "array",
             description:
-              "A collection of answers, each can be a multiple choice or descriptive question.",
+              "A collection of answers, each can be a multiple choice or descriptive question. **All math equations must be wrapped between $ and $.**",
             items: {
               type: "object",
               properties: {
@@ -296,11 +295,12 @@ export function getResponseFormat() {
                 questionId: {
                   type: "string",
                   description:
-                    "The questionId of the question corresponding to the description of the question in the prompt",
+                    "The questionId of the question corresponding to the description of the question in the prompt.",
                 },
                 question: {
                   type: "string",
-                  description: "The question being asked.",
+                  description:
+                    "The question being asked. **All math equations must be wrapped between $ and $.**",
                 },
                 marks: {
                   type: "number",
@@ -310,7 +310,8 @@ export function getResponseFormat() {
                   anyOf: [
                     {
                       type: "array",
-                      description: "Options for multiple choice questions.",
+                      description:
+                        "Options for multiple choice questions. **All math equations must be wrapped between $ and $.**",
                       items: {
                         type: "object",
                         properties: {
@@ -321,7 +322,8 @@ export function getResponseFormat() {
                           },
                           option: {
                             type: "string",
-                            description: "The text of the option.",
+                            description:
+                              "The text of the option. **All math equations must be wrapped between $ and $.**",
                           },
                         },
                         required: ["key", "option"],
@@ -346,21 +348,25 @@ export function getResponseFormat() {
                 },
                 correctAnswer: {
                   type: "string",
-                  description: "The correct answer for the question.",
+                  description:
+                    "The correct answer for the question. **All math equations must be wrapped between $ and $.**",
                 },
                 calculationSteps: {
                   type: "array",
-                  description: "Steps to arrive at the solution.",
+                  description:
+                    "Steps to arrive at the solution. **All math equations must be wrapped between $ and $.**",
                   items: {
                     type: "object",
                     properties: {
                       chainOfThoughtExplanation: {
                         type: "string",
-                        description: "Explanation of the thought process.",
+                        description:
+                          "Explanation of the thought process. **All math equations must be wrapped between $ and $.**",
                       },
                       equation: {
                         type: "string",
-                        description: "The equation or result at this step.",
+                        description:
+                          "The equation or result at this step. **All math equations must be wrapped between $ and $.**",
                       },
                     },
                     required: ["chainOfThoughtExplanation", "equation"],

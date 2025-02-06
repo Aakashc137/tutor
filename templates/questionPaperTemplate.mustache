@@ -56,14 +56,23 @@
         margin-top: 5px;
         margin-left: 20px;
         padding: 0;
+        list-style-type: upper-alpha;
       }
       .mcq-options li {
         margin: 3px 0;
       }
     </style>
 
-    <!-- Include MathJax -->
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Include MathJax with config for $...$ and $$...$$ -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   </head>
 
   <body>
@@ -90,16 +99,13 @@
         {{#questions}}
         <li>
           <span class="question-text">
-            {{question}}
+            {{{question}}}
           </span>
-          {{#isMath}}
-            <!-- Render math equations -->
-            <div>\[ {{mathExpression}} \]</div>
-          {{/isMath}}
+
           {{#isMCQ}}
-            <ol class="mcq-options">
+            <ol class="mcq-options" type="A">
               {{#options}}
-                <li> {{option}}</li>
+                <li>{{{option}}}</li>
               {{/options}}
             </ol>
           {{/isMCQ}}
@@ -107,5 +113,12 @@
         {{/questions}}
       </ol>
     {{/sections}}
+    
+    <!-- Optionally trigger MathJax on DOMContentLoaded -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        MathJax.typeset();
+      });
+    </script>
   </body>
 </html>
