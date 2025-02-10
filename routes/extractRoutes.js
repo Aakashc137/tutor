@@ -56,7 +56,7 @@ extractRouter.post("/pdf", async (req, res) => {
 
       return res.json({
         message: "Extraction job started",
-        jobId: newJob.id,        
+        jobId: newJob.id,
         awsJobId: data.JobId,
         status: "inProcess",
       });
@@ -71,98 +71,100 @@ extractRouter.post("/pdf", async (req, res) => {
 
 // 2) GET /extract/pdf/:jobId: Returns the job status and text URL (if done)
 extractRouter.get("/pdf/:jobId", async (req, res) => {
-    try {
-      const { jobId } = req.params;
-      const job = await Job.findByPk(jobId);
-      if (!job) {
-        return res.status(404).json({ message: "Job not found" });
-      }
-  
-      // If the job is already completed, we can just return
-    //   if (job.status === "completed" || job.status === "failed") {
-    //     return res.json({
-    //       id: job.id,
-    //       status: job.status,
-    //       pdfUrl: job.inputUrl,
-    //       textFileUrl: job.textFileUrl,
-    //     });
-    //   }
-  
-      // Otherwise, we do getDocumentTextDetection calls
-      let allBlocks = [];
-      let nextToken = null;
-      let params = { JobId: job.awsJobId };
-  
-      const initialData = await textract.getDocumentTextDetection(params).promise();
-      if (initialData.Blocks) {
-        allBlocks.push(...initialData.Blocks);
-      }
-      nextToken = initialData.NextToken;
-  
-      // Keep fetching until NextToken is empty
-      while (nextToken) {
-        params.NextToken = nextToken;
-        const nextData = await textract.getDocumentTextDetection(params).promise();
-        if (nextData.Blocks) {
-          allBlocks.push(...nextData.Blocks);
-        }
-        nextToken = nextData.NextToken;
-      }
-  
-      // Check final JobStatus
-      const finalStatus = initialData.JobStatus;
-      if (finalStatus === "SUCCEEDED") {
-        // Combine text
-        let extractedText = allBlocks
-          .filter((block) => block.BlockType === "LINE")
-          .map((block) => block.Text)
-          .join("\n");
-  
-        // Upload to S3
-        const textFileKey = `extractions/${job.id}-${Date.now()}.txt`;
-        const uploadParams = {
-          Bucket: process.env.S3_BUCKET_NAME,
-          Key: textFileKey,
-          Body: extractedText,
-          ContentType: "text/plain",
-        };
-        const uploadResult = await s3.upload(uploadParams).promise();
-        const textFileUrl = uploadResult.Location;
-  
-        // Update job record
-        await job.update({
-          status: "completed",
-          textFileUrl: textFileUrl,
-        });
-  
-        return res.json({
-          id: job.id,
-          status: job.status,
-          pdfUrl: job.inputUrl,
-          textFileUrl: job.textFileUrl,
-        });
-      } else if (finalStatus === "FAILED") {
-        await job.update({ status: "failed" });
-        return res.json({
-          id: job.id,
-          status: job.status,
-          pdfUrl: job.inputUrl,
-        });
-      } else {
-        // Possibly IN_PROGRESS or partial
-        return res.json({
-          id: job.id,
-          status: job.status,
-          pdfUrl: job.inputUrl,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching extraction job:", error);
-      return res
-        .status(500)
-        .json({ message: "Error fetching extraction job", error: error.message });
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findByPk(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
     }
-  });
+
+    // If the job is already completed, we can just return
+    if (job.status === "completed" || job.status === "failed") {
+      return res.json({
+        id: job.id,
+        status: job.status,
+        pdfUrl: job.inputUrl,
+        outputUrl: job.outputUrl,
+      });
+    }
+
+    // Otherwise, we do getDocumentTextDetection calls
+    let allBlocks = [];
+    let nextToken = null;
+    let params = { JobId: job.awsJobId };
+
+    const initialData = await textract.getDocumentTextDetection(params).promise();
+    if (initialData.Blocks) {
+      allBlocks.push(...initialData.Blocks);
+    }
+    nextToken = initialData.NextToken;
+
+    // Keep fetching until NextToken is empty
+    while (nextToken) {
+      params.NextToken = nextToken;
+      const nextData = await textract.getDocumentTextDetection(params).promise();
+      if (nextData.Blocks) {
+        allBlocks.push(...nextData.Blocks);
+      }
+      nextToken = nextData.NextToken;
+    }
+
+    // Check final JobStatus
+    const finalStatus = initialData.JobStatus;
+    if (finalStatus === "SUCCEEDED") {
+      // Combine text
+      let extractedText = allBlocks
+        .filter((block) => block.BlockType === "LINE")
+        .map((block) => block.Text)
+        .join("\n");
+
+      // Upload to S3
+      const textFileKey = `extractions/${job.id}-${Date.now()}.txt`;
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: textFileKey,
+        Body: extractedText,
+        ContentType: "text/plain",
+      };
+      const uploadResult = await s3.upload(uploadParams).promise();
+      const textFileUrl = uploadResult.Location;
+
+      // Update job record
+      await job.update({
+        status: "completed",
+        outputUrl: textFileUrl,
+      });
+
+      return res.json({
+        id: job.id,
+        status: job.status,
+        pdfUrl: job.inputUrl,
+        outputUrl: job.outputUrl,
+      });
+    } else if (finalStatus === "FAILED") {
+      await job.update({ status: "failed" });
+      return res.json({
+        id: job.id,
+        status: job.status,
+        pdfUrl: job.inputUrl,
+        outputUrl: job.outputUrl
+      });
+    } else {
+      // Possibly IN_PROGRESS or partial
+      return res.json({
+        id: job.id,
+        status: job.status,
+        pdfUrl: job.inputUrl,
+        outputUrl: job.outputUrl
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching extraction job:", error);
+    return res
+      .status(500)
+      .json({ message: "Error fetching extraction job", error: error.message });
+  }
+});
 
 function parseS3Url(s3Url) {
   let Bucket, Key;
