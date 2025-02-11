@@ -8,7 +8,7 @@ const snsRouter = express.Router();
 
 snsRouter.post("/notifications", async (req, res) => {
     try {
-        console.log(`Received SNS notification: ${JSON.stringify(req.body, null, 2)}`);
+        console.log(`Received SNS notification: ${JSON.stringify(req, null, 2)}`);
         const messageType = req.headers["x-amz-sns-message-type"];
         const message = req.body;
 
