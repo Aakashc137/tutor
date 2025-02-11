@@ -8,6 +8,7 @@ import { userRouter } from './userRoutes.js';
 import { blueprintRouter } from './blueprintRoutes.js';
 import { questionPaperRouter } from './questionPaperRoutes.js';
 import { questionRouter } from './questionRoutes.js';
+import { snsRouter } from './snsRoutes.js';
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use('/extract', verifyAccessToken, extractRouter);
 router.use('/blueprint', verifyAccessToken, blueprintRouter);
 router.use('/questionPaper', verifyAccessToken, questionPaperRouter);
 router.use('/question', verifyAccessToken, questionRouter);
+router.use('/sns', snsRouter);
 
 export default router;
