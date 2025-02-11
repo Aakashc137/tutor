@@ -11,6 +11,10 @@ const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Parse text bodies (for example, SNS notifications with text/plain)
+app.use(express.text({ type: 'text/*' }));
+
 app.use("/", routes);
 
 const startServer = async () => {
