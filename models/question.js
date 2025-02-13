@@ -38,6 +38,11 @@ export const Question = sequelize.define(
             allowNull: false,
             comment: "The difficulty level of the question.",
         },
+        imageUrl: {
+            type: Sequelize.STRING,
+            allowNull: true,
+            comment: "The URL of the image associated with the question.",
+        },
     },
     {
         tableName: "Questions",

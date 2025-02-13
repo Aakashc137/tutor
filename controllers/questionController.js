@@ -46,7 +46,7 @@ class QuestionController {
 
   async upsertQuestion(req, res) {
     try {
-      const { id, type, questionText, marks, options, difficulty } = req.body;
+      const { id, type, questionText, marks, options, difficulty, imageUrl } = req.body;
 
       if (!type || !questionText || marks === undefined || !difficulty) {
         return res.status(400).send({
@@ -63,9 +63,9 @@ class QuestionController {
         if (!question) {
           return res.status(404).send({ success: false, message: "Question not found" });
         }
-        question = await question.update({ type, questionText, marks, options, difficulty });
+        question = await question.update({ type, questionText, marks, options, difficulty, imageUrl });
       } else {
-        question = await Question.create({ type, questionText, marks, options, difficulty });
+        question = await Question.create({ type, questionText, marks, options, difficulty, imageUrl });
       }
 
       const output = { type, questionText, marks, options, difficulty };
