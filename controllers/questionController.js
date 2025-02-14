@@ -68,7 +68,7 @@ class QuestionController {
         question = await Question.create({ type, questionText, marks, options, difficulty, imageUrl });
       }
 
-      const output = { type, questionText, marks, options, difficulty };
+      const output = { type, questionText, marks, options, difficulty, imageUrl };
 
       res.status(200).send({ success: true, question: output });
     } catch (error) {
