@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Solution Sheet</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+      .subject-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .subject-header h1 {
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .section-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .marks-breakdown {
+        text-align: right;
+        font-size: 1rem;
+      }
+      ol.solution-list {
+        margin: 0 0 20px 40px;
+        padding: 0;
+      }
+      ol.solution-list li {
+        margin-bottom: 20px;
+      }
+      .content-block {
+        margin-left: 5px;
+      }
+      .question-header {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .metadata-line {
+        font-size: 0.9em;
+        font-style: italic;
+        margin-bottom: 5px;
+      }
+      .solution-steps {
+        margin-top: 10px;
+      }
+      .solution-step-item {
+        margin-bottom: 10px;
+      }
+    </style>
+    <!-- Include MathJax for inline math rendering -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  </head>
+  <body>
+    {{#subjectsForQuestions}}
+      <div class="subject-header">
+        <h1>{{subject}}</h1>
+      </div>
+      {{#sections}}
+        <div class="section-title-row">
+          <h2>Section {{name}}</h2>
+          <div class="marks-breakdown">
+            ({{sectionNumberOfQuestions}} x {{sectionMarks}}) = {{sectionTotalMarks}}
+          </div>
+        </div>
+        <ol class="solution-list">
+          {{#questions}}
+            <li>
+              <div class="content-block">
+                <div class="question-header">{{{question}}}</div>
+                <p class="metadata-line">
+                  Topic: {{topic}} • Difficulty: {{difficulty}} • Marks: {{marks}}
+                </p>
+                {{#isMCQ}}
+                  <p>
+                    <strong>Correct Answer:</strong> {{{correctAnswerLabel}}} ({{{correctAnswerOption}}})
+                  </p>
+                {{/isMCQ}}
+                {{^isMCQ}}
+                  <p>
+                    <strong>Correct Answer:</strong> {{{correctAnswer}}}
+                  </p>
+                {{/isMCQ}}
+                <div class="solution-steps">
+                  <strong>Solution:</strong>
+                  <div>
+                    {{#calculationSteps}}
+                      <div class="solution-step-item">
+                        Step {{stepIndex}}:
+                        <div>
+                          {{{equation}}}
+                        </div>
+                        Explanation: {{{chainOfThoughtExplanation}}}
+                      </div>
+                    {{/calculationSteps}}
+                  </div>
+                </div>
+              </div>
+            </li>
+          {{/questions}}
+        </ol>
+      {{/sections}}
+    {{/subjectsForQuestions}}
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        MathJax.typeset();
+      });
+    </script>
+  </body>
+</html>

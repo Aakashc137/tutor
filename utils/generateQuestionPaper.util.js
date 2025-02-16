@@ -108,7 +108,7 @@ export function structureQuestionPaper({
   };
 }
 
-function addStepIndexes(calculationSteps) {
+export function addStepIndexes(calculationSteps) {
   return calculationSteps.map((step, idx) => ({
     ...step,
     stepIndex: idx + 1, // "1)", "2)", ...
@@ -397,6 +397,135 @@ export function getResponseFormat() {
   };
 }
 
+export function getResponseFormatForWorksheet() {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "quiz_schema",
+      strict: true,
+      schema: {
+        type: "object",
+        properties: {
+          answer: {
+            type: "array",
+            description:
+              "A collection of answers, each can be a multiple choice or descriptive question. **All math equations must be wrapped between $ and $.**",
+            items: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["MCQ", "Descriptive"],
+                  description: "The type of the question.",
+                },
+                questionId: {
+                  type: "string",
+                  description:
+                    "The questionId of the question corresponding to the description of the question in the prompt.",
+                },
+                question: {
+                  type: "string",
+                  description:
+                    "The question being asked. **All math equations must be wrapped between $ and $.**",
+                },
+                marks: {
+                  type: "number",
+                  description: "The marks assigned for the question.",
+                },
+                options: {
+                  anyOf: [
+                    {
+                      type: "array",
+                      description:
+                        "Options for multiple choice questions. **All math equations must be wrapped between $ and $.**",
+                      items: {
+                        type: "object",
+                        properties: {
+                          key: {
+                            type: "string",
+                            description:
+                              "The key for the option, e.g., A, B, C, D.",
+                          },
+                          option: {
+                            type: "string",
+                            description:
+                              "The text of the option. **All math equations must be wrapped between $ and $.**",
+                          },
+                        },
+                        required: ["key", "option"],
+                        additionalProperties: false,
+                      },
+                    },
+                    {
+                      type: "null",
+                      description:
+                        "Null for descriptive questions without options.",
+                    },
+                  ],
+                },
+                difficulty: {
+                  type: "string",
+                  enum: ["EASY", "MEDIUM", "HARD"],
+                  description: "The difficulty level of the question.",
+                },
+                topic: {
+                  type: "string",
+                  description: "The topic related to the question.",
+                },
+                subject: {
+                  type: "string",
+                  description: "The subject to which the topic belongs to.",
+                },
+                correctAnswer: {
+                  type: "string",
+                  description:
+                    "The correct answer for the question. **All math equations must be wrapped between $ and $.**",
+                },
+                calculationSteps: {
+                  type: "array",
+                  description:
+                    "Steps to arrive at the solution. **All math equations must be wrapped between $ and $.**",
+                  items: {
+                    type: "object",
+                    properties: {
+                      chainOfThoughtExplanation: {
+                        type: "string",
+                        description:
+                          "Explanation of the thought process. **All math equations must be wrapped between $ and $.**",
+                      },
+                      equation: {
+                        type: "string",
+                        description:
+                          "The equation or result at this step. **All math equations must be wrapped between $ and $.**",
+                      },
+                    },
+                    required: ["chainOfThoughtExplanation", "equation"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: [
+                "type",
+                "questionId",
+                "question",
+                "marks",
+                "options",
+                "difficulty",
+                "topic",
+                "subject",
+                "correctAnswer",
+                "calculationSteps",
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["answer"],
+        additionalProperties: false,
+      },
+    },
+  };
+}
 /**
  * Shuffles an array in place using the Fisher-Yates algorithm.
  * @param {Array} array - The array to shuffle.

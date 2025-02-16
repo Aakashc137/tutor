@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Question Paper</title>
+    <style>
+      body {
+        font-family: "Times New Roman", Times, serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+      .subject-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .subject-header h1 {
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .section-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .marks-breakdown {
+        text-align: right;
+        font-size: 1rem;
+      }
+      ol.question-list {
+        margin: 0 0 20px 40px;
+        padding: 0;
+      }
+      ol.question-list li {
+        margin-bottom: 15px;
+      }
+      .question-text {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+      }
+      .mcq-options {
+        margin-top: 5px;
+        margin-left: 20px;
+        list-style-type: upper-alpha;
+        padding: 0;
+      }
+      .mcq-options li {
+        margin: 3px 0;
+      }
+    </style>
+    <!-- Include MathJax for inline math rendering -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  </head>
+  <body>
+    {{#subjectsForQuestions}}
+      <div class="subject-header">
+        <h1>{{subject}}</h1>
+      </div>
+      {{#sections}}
+        <div class="section-title-row">
+          <h2>Section {{name}}</h2>
+          <div class="marks-breakdown">
+            ({{sectionNumberOfQuestions}} x {{sectionMarks}}) = {{sectionTotalMarks}}
+          </div>
+        </div>
+        <ol class="question-list">
+          {{#questions}}
+            <li>
+              <span class="question-text">{{{question}}}</span>
+              {{#isMCQ}}
+                <ol class="mcq-options" type="A">
+                  {{#options}}
+                    <li>{{{option}}}</li>
+                  {{/options}}
+                </ol>
+              {{/isMCQ}}
+            </li>
+          {{/questions}}
+        </ol>
+      {{/sections}}
+    {{/subjectsForQuestions}}
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        MathJax.typeset();
+      });
+    </script>
+  </body>
+</html>

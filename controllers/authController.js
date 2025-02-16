@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/user.js";
-import { plivoClient } from "../utils/plivoClient.js";
 
 export const signup = async (req, res) => {
   try {
