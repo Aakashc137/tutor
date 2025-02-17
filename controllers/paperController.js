@@ -19,6 +19,7 @@ import { Job } from "../models/job.js";
 import { sendTextMessage } from "../utils/plivo.util.js";
 import { questionController } from "./questionController.js";
 import { Question } from "../models/question.js";
+import s3 from "../utils/s3.js";
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
