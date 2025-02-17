@@ -259,6 +259,16 @@ export function getOpenAIMessages(blueprint, prompts) {
   ];
 }
 
+export function getOpenAIMessagesForExtractedTextToQuestions(extractedText) {
+  const systemPrompt = `You are a middleware that is supposed to convert unstructured raw text of question papers into structured responses as provided in the response format. Make sure that all equations are surrounded by katex syntax. Do not change any content of the paper. If the difficulty and marks are not provided, make the difficulty medium and marks 1`
+  const userPrompt = `Extract questions from the following question paper text in the required responseFormat. \`\`\`text\n${extractedText`\`\`\``}`
+
+  return [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+}
+
 export async function uploadToS3(content, name, blueprint, fileType) {
   const fileKey = `questionPapers/${name}.${fileType}`;
   const uploadParams = {
@@ -272,7 +282,7 @@ export async function uploadToS3(content, name, blueprint, fileType) {
   const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
   return fileUrl;
 }
-export function getResponseFormat() {
+export function getQuestionPaperWithSolutionResponseFormat() {
   return {
     type: "json_schema",
     json_schema: {
@@ -298,7 +308,7 @@ export function getResponseFormat() {
                   description:
                     "The questionId of the question corresponding to the description of the question in the prompt.",
                 },
-                question: {
+                questionText: {
                   type: "string",
                   description:
                     "The question being asked. **All math equations must be wrapped between $ and $.**",
@@ -340,7 +350,7 @@ export function getResponseFormat() {
                 },
                 difficulty: {
                   type: "string",
-                  enum: ["EASY", "MEDIUM", "HARD"],
+                  enum: ["easy", "medium", "hard"],
                   description: "The difficulty level of the question.",
                 },
                 topic: {
@@ -489,3 +499,98 @@ export const sendMessageOfFailure = async ({
     console.error("Error sending message:", error);
   }
 };
+
+export function getQuestionPaperFromExtractedTextResponseFormat() {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "quiz_schema",
+      strict: true,
+      schema: {
+        type: "object",
+        properties: {
+          answer: {
+            type: "array",
+            description:
+              "A collection of answers, each can be a multiple choice or descriptive question. **All math equations must be wrapped between $ and $.**",
+            items: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["MCQ", "Descriptive"],
+                  description: "The type of the question.",
+                },
+                questionId: {
+                  type: "string",
+                  description:
+                    "The questionId of the question corresponding to the description of the question in the prompt.",
+                },
+                questionText: {
+                  type: "string",
+                  description:
+                    "The question being asked. **All math equations must be wrapped between $ and $.**",
+                },
+                marks: {
+                  type: "number",
+                  description: "The marks assigned for the question.",
+                },
+                options: {
+                  anyOf: [
+                    {
+                      type: "array",
+                      description:
+                        "Options for multiple choice questions. **All math equations must be wrapped between $ and $.**",
+                      items: {
+                        type: "object",
+                        properties: {
+                          key: {
+                            type: "string",
+                            description:
+                              "The key for the option, e.g., A, B, C, D.",
+                          },
+                          option: {
+                            type: "string",
+                            description:
+                              "The text of the option. **All math equations must be wrapped between $ and $.**",
+                          },
+                        },
+                        required: ["key", "option"],
+                        additionalProperties: false,
+                      },
+                    },
+                    {
+                      type: "null",
+                      description:
+                        "Null for descriptive questions without options.",
+                    },
+                  ],
+                },
+                difficulty: {
+                  type: "string",
+                  enum: ["easy", "medium", "hard"],
+                  description: "The difficulty level of the question.",
+                },
+                topic: {
+                  type: "string",
+                  description: "The topic related to the question.",
+                }
+              },
+              required: [
+                "type",
+                "questionId",
+                "question",
+                "marks",
+                "options",
+                "difficulty"
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["answer"],
+        additionalProperties: false,
+      },
+    },
+  };
+}

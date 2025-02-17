@@ -14,12 +14,12 @@ export const Job = sequelize.define("Job", {
   jobType: {
     type: Sequelize.ENUM("awsTextExtraction"),
     allowNull: false,
-},
+  },
   // The current status: inProcess, completed, or failed
   status: {
     type: Sequelize.ENUM("inProcess", "completed", "failed"),
     defaultValue: "inProcess",
-  },    
+  },
   // The S3 PDF URL we are extracting from
   inputUrl: {
     type: Sequelize.STRING,
@@ -28,6 +28,11 @@ export const Job = sequelize.define("Job", {
   // The S3 text file URL (once extraction is done)
   outputUrl: {
     type: Sequelize.STRING,
+    allowNull: true,
+  },
+  // Metadata about the job. Json object
+  metadata: {
+    type: Sequelize.JSON,
     allowNull: true,
   },
 }, {

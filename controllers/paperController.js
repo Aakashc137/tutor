@@ -5,14 +5,18 @@ import {
     structureSolution,
     getOpenAIMessages,
     generateHTML,
-    getResponseFormat,
+    getQuestionPaperWithSolutionResponseFormat,
     uploadToS3,
     createQuestionPaperSets,
+    getQuestionPaperFromExtractedTextResponseFormat,
+    getOpenAIMessagesForExtractedTextToQuestions,
 } from "../utils/generateQuestionPaper.util.js";
 import { QuestionPaper } from "../models/questionPaper.js";
 import lodash from "lodash";
 import { Op } from "sequelize";
 import { sendMessageOfCompletion, sendMessageOfFailure } from "../utils/generateQuestionPaper.util.js";
+import { Job } from "../models/job.js";
+import { sendTextMessage } from "../utils/plivo.util.js";
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -81,7 +85,7 @@ class QuestionPaperController {
                 questionPaper: generatedPaper,
             });
 
-            const responseFormat = getResponseFormat();
+            const responseFormat = getQuestionPaperWithSolutionResponseFormat();
 
             let retryCount = 0;
             let questionPaper = [];
@@ -297,6 +301,110 @@ class QuestionPaperController {
         } catch (error) {
             console.error("Error deleting question paper:", error);
             res.status(500).json({ error: "Failed to delete question paper" });
+        }
+    }
+
+    async generateQuestionPaperFromExtractedText({ awsJobId }) {
+        try {
+            const job = Job.findOne({ where: { awsJobId } });
+            if (!job || job.status !== "success" || !job.outputUrl) {
+                console.error(`Successful job not found for awsJobId: ${awsJobId}`);
+                return { success: false };
+            }
+
+            const metadata = job.metadata;
+            const { grade, subject, examName, examYear } = metadata;
+
+            const generatedPaper = await QuestionPaper.create({
+                name: `${examName}_${examYear}`,
+                grade,
+                topics: [],
+                subject,
+                status: "inProgress",
+            });
+
+            const extractedText = await s3.getObjectText(job.outputUrl);
+            //Check empty extracted text and return early if no text if found
+            if (!extractedText || extractedText === "") {
+                console.error(`Empty extracted text for awsJobId: ${awsJobId}`);
+                return { success: false };
+            }
+
+            const responseFormat = getQuestionPaperFromExtractedTextResponseFormat();
+            const messages = getOpenAIMessagesForExtractedTextToQuestions(extractedText);
+
+            console.log(`Generating question paper for awsJobId: ${awsJobId}`);
+            const response = await openai.beta.chat.completions.parse({
+                model: "gpt-4o",
+                messages,
+                response_format: responseFormat,
+            });
+            console.log(`Generated question paper for awsJobId: ${awsJobId}`);
+
+            const result = response.choices[0].message.parsed;
+            const generatedQuestions = result.answer ?? [];
+
+            if (generatedQuestions.length === 0) {
+                console.error("Failed to generate questions from extracted text");
+                await sendTextMessage({
+                    countryCode: "+91",
+                    mobileNumber: "9137173437",
+                    message: `Failed to generate question paper for awsJobId ${awsJobId}`,
+                })
+
+                return { success: false }
+            }
+
+            // Structure Generated Question Paper according to sections
+            console.log(`Structuring question paper with ${generatedQuestions.length} questions`);
+            const structuredQuestionPaper = structureQuestionPaper({
+                generatedQuestions,
+                grade,
+                academyName: `${examName} ${examYear}`,
+                totalMarks: derivedMarks,
+                subject,
+                timeDuration: derivedMarks < 35 ? 1 : derivedMarks < 70 ? 2 : 3,
+            });
+            console.log(`Structured question paper with ${generatedQuestions.length} questions`);
+
+            const derivedMarks = generatedQuestions.reduce(
+                (acc, question) => acc + question.marks,
+                0
+            );
+
+            const renderedQuestionPaperHTML = generateHTML(
+                structuredQuestionPaper,
+                "./templates/questionPaperTemplate.mustache"
+            );
+
+            const questionPaperHTMLUrl = await uploadToS3(
+                renderedQuestionPaperHTML,
+                `${name}-${++index}`,
+                blueprint,
+                "html"
+            );
+
+            // Update the QuestionPaper entry with the S3 URLs and status 'completed'
+            await generatedPaper.update({
+                questionPaperLink: questionPaperHTMLUrl,
+                questionPapersLinks: [questionPaperHTMLUrl],
+                solutionLink: undefined,
+                status: "completed",
+            });
+
+            await sendTextMessage({
+                countryCode: "+91",
+                mobileNumber: "9137173437",
+                message: `Successfully generated question paper for awsJobId ${awsJobId}`,
+            })
+
+            console.log("Successfully updated question status");
+            return;
+        } catch (error) {
+            console.error("Error generating question paper:", error);
+            return res
+                .status(500)
+                .json({ error: "Failed to generate question paper" });
         }
     }
 }

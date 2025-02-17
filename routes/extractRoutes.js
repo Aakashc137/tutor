@@ -5,7 +5,7 @@ import AWS from "aws-sdk";
 import { Job } from "../models/job.js";
 import s3 from "../utils/s3.js";
 
-const textract = new AWS.Textract({
+export const textract = new AWS.Textract({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
@@ -16,7 +16,7 @@ const extractRouter = express.Router();
 // 1) POST /extract/pdf: Creates a new job, starts Textract
 extractRouter.post("/pdf", async (req, res) => {
   try {
-    const { pdfUrl } = req.body;
+    const { pdfUrl, metadata } = req.body;
     if (!pdfUrl) {
       return res.status(400).json({ message: "pdfUrl is required" });
     }
@@ -26,6 +26,7 @@ extractRouter.post("/pdf", async (req, res) => {
       inputUrl: pdfUrl,
       status: "inProcess",
       jobType: "awsTextExtraction",
+      metadata,
     });
 
     const { Bucket, Key } = parseS3Url(pdfUrl);
@@ -36,6 +37,11 @@ extractRouter.post("/pdf", async (req, res) => {
           Bucket,
           Name: Key,
         },
+      },
+      // Send notifications to SNS when the job is complete
+      NotificationChannel: {
+        RoleArn: process.env.TEXTRACT_SNS_ROLE_ARN,   // e.g., arn:aws:iam::<YOUR_ACCOUNT_ID>:role/TextractSNSPublishRole
+        SNSTopicArn: process.env.TEXTRACT_SNS_TOPIC_ARN, // e.g., arn:aws:sns:ap-south-1:476114130291:TextractNotifications
       },
     };
 
@@ -163,40 +169,6 @@ extractRouter.get("/pdf/:jobId", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error fetching extraction job", error: error.message });
-  }
-});
-
-extractRouter.post("/notifications", async (req, res) => {
-  try {
-    const messageType = req.headers["x-amz-sns-message-type"];
-    const message = req.body;
-
-    if (messageType === "SubscriptionConfirmation") {
-      console.log("Received SNS SubscriptionConfirmation:", message);
-      console.log(JSON.stringify(message.subscribeUrl, null, 2));
-      // Automatically confirm the subscription by GET-ing the SubscribeURL
-      await axios.get(message.SubscribeURL);
-      console.log("Subscription confirmed");
-      return res.json({ message: "Subscription confirmed" });
-    } else if (messageType === "Notification") {
-      // Parse the notification message (it is a JSON string in the Message field)
-      const notification = JSON.parse(message.Message);
-      const { JobId, Status } = notification;
-      console.log(`Received notification for JobId ${JobId} with status ${Status}`);
-
-      // Find the corresponding job by awsJobId and update its status
-      const job = await Job.findOne({ where: { awsJobId: JobId } });
-      if (job) {
-        await job.update({ status: Status.toLowerCase() });
-      }
-      return res.json({ message: "Notification processed" });
-    } else {
-      console.log("Unhandled SNS message type:", messageType);
-      return res.json({ message: "Message type not handled" });
-    }
-  } catch (error) {
-    console.error("Error processing SNS notification:", error);
-    return res.status(500).json({ message: "Error processing notification", error: error.message });
   }
 });
 
