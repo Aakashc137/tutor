@@ -172,7 +172,7 @@ extractRouter.get("/pdf/:jobId", async (req, res) => {
   }
 });
 
-function parseS3Url(s3Url) {
+export function parseS3Url(s3Url) {
   let Bucket, Key;
 
   if (s3Url.startsWith("s3://")) {

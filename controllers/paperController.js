@@ -20,6 +20,7 @@ import { sendTextMessage } from "../utils/plivo.util.js";
 import { questionController } from "./questionController.js";
 import { Question } from "../models/question.js";
 import s3 from "../utils/s3.js";
+import { parseS3Url } from "../routes/extractRoutes.js";
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -326,7 +327,10 @@ class QuestionPaperController {
                 status: "inProgress",
             });
 
-            const extractedText = await s3.getObjectText(job.outputUrl);
+            const { Bucket, Key } = parseS3Url(job.outputUrl);
+            const s3Object = await s3.getObject({ Bucket, Key }).promise();
+            const extractedText = s3Object.Body.toString('utf-8');
+
             //Check empty extracted text and return early if no text if found
             if (!extractedText || extractedText === "") {
                 console.error(`Empty extracted text for awsJobId: ${awsJobId}`);
