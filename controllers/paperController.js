@@ -308,7 +308,7 @@ class QuestionPaperController {
 
     async generateQuestionPaperFromExtractedText({ awsJobId }) {
         try {
-            const job = Job.findOne({ where: { awsJobId } });
+            const job = await Job.findOne({ where: { awsJobId } });
             if (!job || job.status !== "completed" || !job.outputUrl) {
                 console.error(`Successful job not found for awsJobId: ${awsJobId}`);
                 return { success: false };
