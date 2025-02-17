@@ -17,6 +17,8 @@ import { Op } from "sequelize";
 import { sendMessageOfCompletion, sendMessageOfFailure } from "../utils/generateQuestionPaper.util.js";
 import { Job } from "../models/job.js";
 import { sendTextMessage } from "../utils/plivo.util.js";
+import { questionController } from "./questionController.js";
+import { Question } from "../models/question.js";
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -307,7 +309,7 @@ class QuestionPaperController {
     async generateQuestionPaperFromExtractedText({ awsJobId }) {
         try {
             const job = Job.findOne({ where: { awsJobId } });
-            if (!job || job.status !== "success" || !job.outputUrl) {
+            if (!job || job.status !== "completed" || !job.outputUrl) {
                 console.error(`Successful job not found for awsJobId: ${awsJobId}`);
                 return { success: false };
             }
@@ -354,6 +356,12 @@ class QuestionPaperController {
 
                 return { success: false }
             }
+
+            const questionsToCreate = generatedQuestions.map(question => {
+                const { type, question: questionText, marks, options, difficulty } = question;
+                return { type, questionText, marks, options, difficulty };
+            });
+            await Question.bulkCreate(questionsToCreate);
 
             // Structure Generated Question Paper according to sections
             console.log(`Structuring question paper with ${generatedQuestions.length} questions`);
