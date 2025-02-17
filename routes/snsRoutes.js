@@ -80,7 +80,7 @@ snsRouter.post("/notifications", async (req, res) => {
                 });
 
 
-                questionPaperController.generateQuestionPaperFromExtractedText(textFileUrl, job.id);
+                questionPaperController.generateQuestionPaperFromExtractedText({ awsJobId });
 
                 return res.status(200).send();
             } else if (finalStatus === "FAILED") {
