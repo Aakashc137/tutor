@@ -261,7 +261,10 @@ export function getOpenAIMessages(blueprint, prompts) {
 
 export function getOpenAIMessagesForExtractedTextToQuestions(extractedText) {
   const systemPrompt = `You are a middleware that is supposed to convert unstructured raw text of question papers into structured responses as provided in the response format. Make sure that all equations are surrounded by katex syntax. Do not change any content of the paper. If the difficulty and marks are not provided, make the difficulty medium and marks 1`
-  const userPrompt = `Extract questions from the following question paper text in the required responseFormat. \`\`\`text\n${extractedText`\`\`\``}`
+  const userPrompt = `Extract questions from the following question paper text in the required responseFormat:
+\`\`\`text
+${extractedText}
+\`\`\``
 
   return [
     { role: "system", content: systemPrompt },
@@ -269,7 +272,7 @@ export function getOpenAIMessagesForExtractedTextToQuestions(extractedText) {
   ];
 }
 
-export async function uploadToS3(content, name, blueprint, fileType) {
+export async function uploadToS3(content, name, fileType) {
   const fileKey = `questionPapers/${name}.${fileType}`;
   const uploadParams = {
     Bucket: process.env.S3_BUCKET_NAME,
@@ -308,7 +311,7 @@ export function getQuestionPaperWithSolutionResponseFormat() {
                   description:
                     "The questionId of the question corresponding to the description of the question in the prompt.",
                 },
-                questionText: {
+                question: {
                   type: "string",
                   description:
                     "The question being asked. **All math equations must be wrapped between $ and $.**",
@@ -526,7 +529,7 @@ export function getQuestionPaperFromExtractedTextResponseFormat() {
                   description:
                     "The questionId of the question corresponding to the description of the question in the prompt.",
                 },
-                questionText: {
+                question: {
                   type: "string",
                   description:
                     "The question being asked. **All math equations must be wrapped between $ and $.**",
@@ -571,10 +574,6 @@ export function getQuestionPaperFromExtractedTextResponseFormat() {
                   enum: ["easy", "medium", "hard"],
                   description: "The difficulty level of the question.",
                 },
-                topic: {
-                  type: "string",
-                  description: "The topic related to the question.",
-                }
               },
               required: [
                 "type",

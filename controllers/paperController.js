@@ -206,7 +206,6 @@ class QuestionPaperController {
                 const questionPaperHTMLUrl = await uploadToS3(
                     renderedQuestionPaperHTML,
                     `${name}-${++index}`,
-                    blueprint,
                     "html"
                 );
                 questionPaperHTMLUrls.push(questionPaperHTMLUrl);
@@ -216,7 +215,6 @@ class QuestionPaperController {
             const solutionHTMLUrl = await uploadToS3(
                 renderedSolutionHTML,
                 `solution-${name}`,
-                blueprint,
                 "html"
             );
             console.log(`Successfully uploaded question paper to S3`);
@@ -369,9 +367,14 @@ class QuestionPaperController {
             await Question.bulkCreate(questionsToCreate);
 
             // Structure Generated Question Paper according to sections
+            const derivedMarks = generatedQuestions.reduce(
+                (acc, question) => acc + question.marks,
+                0
+            );
+
             console.log(`Structuring question paper with ${generatedQuestions.length} questions`);
             const structuredQuestionPaper = structureQuestionPaper({
-                generatedQuestions,
+                questionPaper: generatedQuestions,
                 grade,
                 academyName: `${examName} ${examYear}`,
                 totalMarks: derivedMarks,
@@ -380,11 +383,6 @@ class QuestionPaperController {
             });
             console.log(`Structured question paper with ${generatedQuestions.length} questions`);
 
-            const derivedMarks = generatedQuestions.reduce(
-                (acc, question) => acc + question.marks,
-                0
-            );
-
             const renderedQuestionPaperHTML = generateHTML(
                 structuredQuestionPaper,
                 "./templates/questionPaperTemplate.mustache"
@@ -392,8 +390,7 @@ class QuestionPaperController {
 
             const questionPaperHTMLUrl = await uploadToS3(
                 renderedQuestionPaperHTML,
-                `${name}-${++index}`,
-                blueprint,
+                `${examName} ${examYear}`,
                 "html"
             );
 
@@ -415,9 +412,7 @@ class QuestionPaperController {
             return;
         } catch (error) {
             console.error("Error generating question paper:", error);
-            return res
-                .status(500)
-                .json({ error: "Failed to generate question paper" });
+            return;
         }
     }
 }
